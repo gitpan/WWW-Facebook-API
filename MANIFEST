@@ -1,0 +1,26 @@
+Changes
+MANIFEST
+META.yml # Will be created by "make dist"
+Makefile.PL
+README
+lib/WWW/Facebook/API.pm
+lib/WWW/Facebook/API/Simple.pm
+lib/WWW/Facebook/API/Auth.pm
+lib/WWW/Facebook/API/Base.pm
+lib/WWW/Facebook/API/Errors.pm
+lib/WWW/Facebook/API/FQL.pm
+lib/WWW/Facebook/API/Events.pm
+lib/WWW/Facebook/API/Friends.pm
+lib/WWW/Facebook/API/Groups.pm
+lib/WWW/Facebook/API/Login.pm
+lib/WWW/Facebook/API/Notifications.pm
+lib/WWW/Facebook/API/Photos.pm
+lib/WWW/Facebook/API/Update.pm
+lib/WWW/Facebook/API/Users.pm
+t/00.load.t
+t/api.t
+t/api_simple.t
+t/auth.t
+t/perlcritic.t
+t/pod-coverage.t
+t/pod.t
