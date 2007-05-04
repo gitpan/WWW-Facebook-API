@@ -1,7 +1,7 @@
 #######################################################################
-# $Date: 2007-05-03T12:11:39.401437Z $
-# $Revision: 1417 $
-# $Author: unobe $
+# $Date: 2007-05-04T17:12:31.924183Z $
+# $Revision: 1426 $
+# $Author: dromano $
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Events;
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.6');
+use version; our $VERSION = qv('0.0.7');
 
 use Moose;
 extends 'Moose::Object';
@@ -49,7 +49,7 @@ WWW::Facebook::API::Events - Events for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Events version 0.0.6
+This document describes WWW::Facebook::API::Events version 0.0.7
 
 
 =head1 SYNOPSIS
@@ -96,7 +96,8 @@ environment variables.
 
 =head1 DEPENDENCIES
 
-L<WWW::Facebook::API::Base>.
+L<Moose>
+L<WWW::Facebook::API::Base>
 
 
 =head1 INCOMPATIBILITIES

@@ -1,7 +1,7 @@
 #######################################################################
-# $Date: 2007-05-03T12:11:39.401437Z $
-# $Revision: 1417 $
-# $Author: unobe $
+# $Date: 2007-05-04T17:12:31.924183Z $
+# $Revision: 1426 $
+# $Author: dromano $
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Auth;
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.6');
+use version; our $VERSION = qv('0.0.7');
 
 use Moose;
 extends 'Moose::Object';
@@ -50,7 +50,7 @@ sub get_session {
         $self->base->secret(
             $xml->{auth_getSession_response}->[0]->{secret}->[0]
         );
-        $self->base->server_uri( _make_insecure( $self->base->server_uri ) );
+        $self->base->server_uri( _make_unsecure( $self->base->server_uri ) );
     }
     return $self->base->simple
         ? $xml->{auth_getSession_response}->[0]
@@ -63,7 +63,7 @@ sub _make_secure {
     return $uri;
 }
 
-sub _make_insecure {
+sub _make_unsecure {
     my $uri = shift;
     $uri =~ s{https://}{http://}mx;
     return $uri;
@@ -79,7 +79,7 @@ WWW::Facebook::API::Auth - Authentication utilities for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Auth version 0.0.6
+This document describes WWW::Facebook::API::Auth version 0.0.7
 
 
 =head1 SYNOPSIS
@@ -119,7 +119,7 @@ the REST server.
 
 Changes the server_uri to https for C<get_session>.
 
-=item _make_insecure
+=item _make_unsecure
 
 Changes the server_uri back to http at the end of C<get_session>.
 
@@ -140,12 +140,7 @@ environment variables.
 =head1 DEPENDENCIES
 
 L<Moose>
-L<WWW::Mechanize>
-L<XML::Simple>
-L<Digest::MD5>
-L<Time::HiRes>
-L<URI::Escape>
-
+L<WWW::Facebook::API>
 
 =head1 INCOMPATIBILITIES
 

@@ -1,7 +1,7 @@
 #######################################################################
-# $Date: 2007-05-03T12:11:39.401437Z $
-# $Revision: 1417 $
-# $Author: unobe $
+# $Date: 2007-05-04T17:12:31.924183Z $
+# $Revision: 1426 $
+# $Author: dromano $
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Simple;
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.6');
+use version; our $VERSION = qv('0.0.7');
 
 use Moose;
 extends 'WWW::Facebook::API';
@@ -26,12 +26,12 @@ __END__
 
 =head1 NAME
 
-WWW::Facebook::API - Facebook API implementation
+WWW::Facebook::API::Simple - Facebook API implementation
 
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.0.6
+This document describes WWW::Facebook::API::Simple version 0.0.7
 
 
 =head1 SYNOPSIS
@@ -100,12 +100,7 @@ variables.
 =head1 DEPENDENCIES
 
 L<Moose>
-L<WWW::Mechanize>
-L<XML::Simple>
-L<Digest::MD5>
-L<Time::HiRes>
-L<URI::Escape>
-L<Crypt::SSLeay>
+L<WWW::Facebook::API>
 
 
 =head1 INCOMPATIBILITIES

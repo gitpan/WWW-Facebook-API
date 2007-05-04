@@ -1,7 +1,7 @@
 #######################################################################
-# $Date: 2007-05-03T12:11:39.401437Z $
-# $Revision: 1417 $
-# $Author: unobe $
+# $Date: 2007-05-04T17:12:31.924183Z $
+# $Revision: 1426 $
+# $Author: dromano $
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Base;
@@ -16,7 +16,7 @@ use URI::Escape;
 use XML::Simple qw(xml_in);
 use Digest::MD5 qw(md5_hex);
 
-use version; our $VERSION = qv('0.0.6');
+use version; our $VERSION = qv('0.0.7');
 
 use Moose;
 use WWW::Facebook::API::Errors;
@@ -155,7 +155,7 @@ WWW::Facebook::API::Base - Base class for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Base version 0.0.6
+This document describes WWW::Facebook::API::Base version 0.0.7
 
 
 =head1 SYNOPSIS
@@ -301,6 +301,7 @@ L<XML::Simple>
 L<Digest::MD5>
 L<Time::HiRes>
 L<URI::Escape>
+L<Crypt::SSLeay>
 
 
 =head1 INCOMPATIBILITIES
