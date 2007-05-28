@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                WWW-Facebook-API
-version:             v0.0.9
+version:             v0.1.0
 abstract:            Facebook API implementation
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.32
