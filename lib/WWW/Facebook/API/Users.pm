@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-28T14:18:18.679359Z $
-# $Revision: 1508 $
+# $Date: 2007-05-29T05:20:51.976436Z $
+# $Revision: 1516 $
 # $Author: unobe $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.9');
+use version; our $VERSION = qv('0.1.1');
 
 use Moose;
 extends 'Moose::Object';
@@ -23,6 +23,11 @@ sub get_info {
         method => 'users.getInfo',
         params => { @_ },
     );
+
+    # remove erraneous hash refs in quotes
+    my $quotes = $value->{users_getInfo_response}->[0]->{user}->{quotes};
+    @$quotes = grep  { not ref } @$quotes;
+
     return $self->base->simple
         ? $value->{users_getInfo_response}->[0]->{user}
         : $value;
@@ -49,7 +54,7 @@ WWW::Facebook::API::Users - Users methods for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Users version 0.0.9
+This document describes WWW::Facebook::API::Users version 0.1.1
 
 
 =head1 SYNOPSIS

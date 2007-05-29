@@ -1,10 +1,10 @@
 #######################################################################
-# $Date: 2007-05-29T05:19:01.144060Z $
-# $Revision: 1515 $
+# $Date: 2007-05-28T14:18:18.679359Z $
+# $Revision: 1508 $
 # $Author: unobe $
 # ex: set ts=8 sw=4 et
 #########################################################################
-package WWW::Facebook::API::Update;
+package WWW::Facebook::API::Profile;
 
 use warnings;
 use strict;
@@ -17,14 +17,25 @@ extends 'Moose::Object';
 
 has 'base' => ( is => 'ro', isa => 'WWW::Facebook::API::Base' );
 
-sub decode_ids {
+sub set_FBML {
     my $self = shift;
     my $value = $self->base->call(
-        method => 'update.decodeIDs',
+        method => 'profile.setFBML',
         params => { @_ },
     );
     return $self->base->simple
-        ? $value->{update_decodeIDs_response}->[0]->{id_map}
+        ? $value->{profile_setFBML_response}->[0]->{content}
+        : $value;
+}
+
+sub get_FBML {
+    my $self = shift;
+    my $value = $self->base->call(
+        method => 'profile.getFBML',
+        params => { @_ },
+    );
+    return $self->base->simple
+        ? $value->{profile_getFBML_response}->[0]->{content}
         : $value;
 }
 
@@ -33,22 +44,21 @@ __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Update - Update methods for Client
+WWW::Facebook::API::Profile - Profile methods for Client
 
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Update version 0.1.1
+This document describes WWW::Facebook::API::Profile version 0.1.1
 
 
 =head1 SYNOPSIS
 
-    use WWW::Facebook::API::Update;
-
+    use WWW::Facebook::API;
 
 =head1 DESCRIPTION
 
-Methods for updating old API info to newer API with L<WWW::Facebook::API>
+Methods for accessing photos with L<WWW::Facebook::API>
 
 =head1 SUBROUTINES/METHODS 
 
@@ -59,21 +69,24 @@ Methods for updating old API info to newer API with L<WWW::Facebook::API>
 The L<WWW::Facebook::API::Base> object to use to make calls to
 the REST server.
 
-=item decode_ids
+=item set_FBML
 
-The update.decodeIDs method of the Facebook API.
+The profile.setFBML method of the Facebook API.
+
+=item get_FBML
+
+The profile.getFBML method of the Facebook API.
 
 =back
 
+
 =head1 DIAGNOSTICS
 
-This module is used by L<WWW::Facebook::API> and right now does
-not have any unique error messages.
-
+None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Update requires no configuration files or
+WWW::Facebook::API::Profile requires no configuration files or
 environment variables.
 
 
