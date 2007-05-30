@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-29T05:19:01.144060Z $
-# $Revision: 1515 $
+# $Date: 2007-05-30T02:22:16.124936Z $
+# $Revision: 1518 $
 # $Author: unobe $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.1');
+use version; our $VERSION = qv('0.1.3');
 
 use Moose;
 extends 'WWW::Facebook::API::Base';
@@ -116,7 +116,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.1.1
+This document describes WWW::Facebook::API version 0.1.3
 
 
 =head1 SYNOPSIS
@@ -189,6 +189,12 @@ e.g., events.getInWindow is events->get_in_window
 
 fql namespace of the API (See L<WWW::Facebook::API::FQL>).
 
+=item feed
+
+feed namespace of the API (See L<WWW::Facebook::API::Feed>).
+All method names from the Facebook API are lower_cased instead of CamelCase,
+e.g., feed.publishStoryToUser() is feed->publish_story_to_user()
+
 =item friends
 
 friends namespace of the API (See L<WWW::Facebook::API::Friends>).
@@ -210,6 +216,12 @@ notifications namespace of the API (See L<WWW::Facebook::API::Notifications>).
 photos namespace of the API (See L<WWW::Facebook::API::Photos>).
 All method names from the Facebook API are lower_cased instead of CamelCase,
 e.g., photos.getOfUser is photos->get_of_user
+
+=item profile
+
+profile namespace of the API (See L<WWW::Facebook::API::Profile>).
+All method names from the Facebook API are lower_cased instead of CamelCase,
+e.g., profile.setFBML is profile->set_FBML
 
 =item update
 
@@ -261,6 +273,11 @@ L<Crypt::SSLeay>
 =head1 INCOMPATIBILITIES
 
 None.
+
+=head1 SEE ALSO
+
+L<WWW::Facebook::FQL> for an interface to just work with Facebook's FQL query
+language.
 
 
 =head1 BUGS AND LIMITATIONS

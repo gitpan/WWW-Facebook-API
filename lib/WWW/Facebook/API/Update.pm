@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-29T05:19:01.144060Z $
-# $Revision: 1515 $
+# $Date: 2007-05-30T02:22:16.124936Z $
+# $Revision: 1518 $
 # $Author: unobe $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,23 +10,14 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.1');
+use version; our $VERSION = qv('0.1.3');
 
 use Moose;
 extends 'Moose::Object';
 
 has 'base' => ( is => 'ro', isa => 'WWW::Facebook::API::Base' );
 
-sub decode_ids {
-    my $self = shift;
-    my $value = $self->base->call(
-        method => 'update.decodeIDs',
-        params => { @_ },
-    );
-    return $self->base->simple
-        ? $value->{update_decodeIDs_response}->[0]->{id_map}
-        : $value;
-}
+sub decode_ids  { shift->base->call( 'update.decodeIDs', @_ ) }
 
 1; # Magic true value required at end of module
 __END__
@@ -38,7 +29,7 @@ WWW::Facebook::API::Update - Update methods for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Update version 0.1.1
+This document describes WWW::Facebook::API::Update version 0.1.3
 
 
 =head1 SYNOPSIS

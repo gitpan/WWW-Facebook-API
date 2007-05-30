@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-29T05:19:01.144060Z $
-# $Revision: 1515 $
+# $Date: 2007-05-30T02:22:16.124936Z $
+# $Revision: 1518 $
 # $Author: unobe $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,34 +10,15 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.1');
+use version; our $VERSION = qv('0.1.3');
 
 use Moose;
 extends 'Moose::Object';
 
 has 'base' => (is => 'ro', isa => 'WWW::Facebook::API::Base');
 
-sub get {
-    my $self = shift;
-    my $value = $self->base->call(
-        method => 'events.get',
-        params => { @_ },
-    );
-    return $self->base->simple
-        ? $value->{events_get_response}->[0]->{event}
-        : $value;
-}
-
-sub get_members {
-    my $self = shift;
-    my $value = $self->base->call(
-        method => 'events.getMembers',
-        params => { @_ },
-    );
-    return $self->base->simple
-        ? $value->{events_getMembers_response}->[0]
-        : $value;
-}
+sub get         { shift->base->call( 'events.get', @_ )           }
+sub get_members { shift->base->call( 'events.getMembers', @_ )    }
 
 1; # Magic true value required at end of module
 __END__
@@ -49,7 +30,7 @@ WWW::Facebook::API::Events - Events for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Events version 0.1.1
+This document describes WWW::Facebook::API::Events version 0.1.3
 
 
 =head1 SYNOPSIS

@@ -1,11 +1,17 @@
 #######################################################################
-# $Date: 2007-05-03T12:11:39.401437Z $
-# $Revision: 1417 $
+# $Date: 2007-05-30T02:17:31.753657Z $
+# $Revision: 1517 $
 # $Author: unobe $
 # ex: set ts=8 sw=4 et
 #########################################################################
-use Test::More tests => 5;
-use Test::MockObject::Extends;
+use Test::More;
+BEGIN {
+    eval 'use Test::MockObject::Extends';
+    if ($@) {
+        plan skip_all => 'Tests require Test::MockObject::Extends';
+    }
+    plan tests => 5;
+}
 use WWW::Mechanize;
 use WWW::Facebook::API;
 use strict;
