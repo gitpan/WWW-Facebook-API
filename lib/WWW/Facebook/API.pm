@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-30T02:22:16.124936Z $
-# $Revision: 1518 $
+# $Date: 2007-05-30T13:21:11.572530Z $
+# $Revision: 1521 $
 # $Author: unobe $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.3');
+use version; our $VERSION = qv('0.1.4');
 
 use Moose;
 extends 'WWW::Facebook::API::Base';
@@ -116,7 +116,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.1.3
+This document describes WWW::Facebook::API version 0.1.4
 
 
 =head1 SYNOPSIS
