@@ -1,10 +1,4 @@
-#######################################################################
-# $Date: 2007-05-31T19:37:20.109163Z $
-# $Revision: 1538 $
-# $Author: unobe $
-# ex: set ts=8 sw=4 et
-#########################################################################
-package WWW::Facebook::API::Groups;
+package WWW::Facebook::API::FBML;
 
 use warnings;
 use strict;
@@ -17,31 +11,30 @@ extends 'Moose::Object';
 
 has 'base' => ( is => 'ro', isa => 'WWW::Facebook::API::Base' );
 
-sub get         { shift->base->call( 'groups.get', @_ ) }
-sub get_members { shift->base->call( 'groups.getMembers', @_ ) }
+sub refresh_img_src { shift->base->call( 'fbml.refreshImgSrc', @_ ) }
+sub refresh_ref_url { shift->base->call( 'fbml.refreshRefUrl', @_ ) }
+sub set_ref_handle  { shift->base->call( 'fbml.setRefHandle',  @_ ) }
 
 1; # Magic true value required at end of module
 __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Groups - Groups methods for Client
+WWW::Facebook::API::FBML - FBML methods for Client
 
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Groups version 0.1.5
+This document describes WWW::Facebook::API::FBML version 0.1.5
 
 
 =head1 SYNOPSIS
 
-    use WWW::Facebook::API::Groups;
-
+    use WWW::Facebook::API;
 
 =head1 DESCRIPTION
 
-Methods for accessing groups with L<WWW::Facebook::API>
-
+Methods for updating FBML references with L<WWW::Facebook::API>
 
 =head1 SUBROUTINES/METHODS 
 
@@ -52,26 +45,28 @@ Methods for accessing groups with L<WWW::Facebook::API>
 The L<WWW::Facebook::API::Base> object to use to make calls to
 the REST server.
 
-=item get
+=item set_ref_handle
 
-The groups.get method of the Facebook API.
+The fbml.setRefHandle method of the Facebook API.
 
-=item get_members
+=item refresh_img_src
 
-The groups.get_members method of the Facebook API.
+The fbml.refreshImgSrc method of the Facebook API.
+
+=item refresh_ref_url
+
+The fbml.refreshRefUrl method of the Facebook API.
 
 =back
 
 
 =head1 DIAGNOSTICS
 
-This module is used by L<WWW::Facebook::API> and right now does
-not have any unique error messages.
-
+None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Groups requires no configuration files or
+WWW::Facebook::API::FBML requires no configuration files or
 environment variables.
 
 
@@ -97,12 +92,12 @@ L<http://rt.cpan.org>.
 
 =head1 AUTHOR
 
-David Romano  C<< <unobe@cpan.org> >>
+TSIBLEY C<< <tsibley@cpan.org> >>
 
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2007, David Romano C<< <unobe@cpan.org> >>. All rights reserved.
+Copyright (c) 2007, TSIBLEY C<< <tsibley@cpan.org> >>. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.

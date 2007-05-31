@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-30T02:22:16.124936Z $
-# $Revision: 1518 $
+# $Date: 2007-05-31T19:37:20.109163Z $
+# $Revision: 1538 $
 # $Author: unobe $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.3');
+use version; our $VERSION = qv('0.1.5');
 
 use Moose;
 extends 'Moose::Object';
@@ -29,7 +29,7 @@ WWW::Facebook::API::FQL - Message methods for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::FQL version 0.1.3
+This document describes WWW::Facebook::API::FQL version 0.1.5
 
 
 =head1 SYNOPSIS
