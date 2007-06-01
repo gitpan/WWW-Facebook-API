@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-01 02:58:25 -0700 (Fri, 01 Jun 2007) $
-# $Revision: 48 $
+# $Date: 2007-06-01 06:12:16 -0700 (Fri, 01 Jun 2007) $
+# $Revision: 53 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.2.0');
+use version; our $VERSION = qv('0.2.1');
 
 my @attributes = qw( base login_uri );
 
@@ -62,9 +62,6 @@ sub login {
         croak "A desktop app must have a token passed in!\n" unless $token;
         $params .= "&auth_token=$token";
     }
-    my $url = $self->login_uri . $params;
-    system qq(open $url);
-    sleep 10;
     my $agent = $self->base->mech->agent_alias('Mac Mozilla');
     $self->base->mech->get( $self->login_uri . $params );
     if ( not $self->base->mech->forms ) {
@@ -96,7 +93,7 @@ WWW::Facebook::API::Login - Ask for user login info
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Login version 0.2.0
+This document describes WWW::Facebook::API::Login version 0.2.1
 
 
 =head1 SYNOPSIS

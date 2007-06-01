@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-01 02:58:25 -0700 (Fri, 01 Jun 2007) $
-# $Revision: 48 $
+# $Date: 2007-06-01 06:12:16 -0700 (Fri, 01 Jun 2007) $
+# $Revision: 53 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.2.0');
+use version; our $VERSION = qv('0.2.1');
 
 use base 'WWW::Facebook::API::Base';
 
@@ -71,7 +71,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.2.0
+This document describes WWW::Facebook::API version 0.2.1
 
 
 =head1 SYNOPSIS
