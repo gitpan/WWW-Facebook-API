@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-31T19:37:20.109163Z $ # $Revision: 1538 $
-# $Author: unobe $
+# $Date: 2007-05-31 17:58:27 -0700 (Thu, 31 May 2007) $ # $Revision: 34 $
+# $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Base;
@@ -14,7 +14,7 @@ use Time::HiRes qw(time);
 use XML::Simple qw(xml_in);
 use Digest::MD5;
 
-use version; our $VERSION = qv('0.1.5');
+use version; our $VERSION = qv('0.1.6');
 
 use Moose;
 use WWW::Facebook::API::Errors;
@@ -88,10 +88,10 @@ sub call {
         carp $self->errors->log_string( $params, $response );
     }
     if ( $response =~ m!<error_code>(\d+)|^{"error_code"\D(\d+)!mx ) {
-        $self->last_call_success( 0 );
+        $self->errors->last_call_success( 0 );
         $self->errors->last_error( $1 );
 
-        if ( $self->throw_errors ) {
+        if ( $self->errors->throw_errors ) {
             confess "Error during REST $method call:\n",
                     $self->errors->log_string( $params, $response );
         }
@@ -186,7 +186,7 @@ WWW::Facebook::API::Base - Base class for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Base version 0.1.5
+This document describes WWW::Facebook::API::Base version 0.1.6
 
 
 =head1 SYNOPSIS

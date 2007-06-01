@@ -1,7 +1,7 @@
 #######################################################################
-# $Date: 2007-05-31T19:37:20.109163Z $
-# $Revision: 1538 $
-# $Author: unobe $
+# $Date: 2007-05-31 17:58:27 -0700 (Thu, 31 May 2007) $
+# $Revision: 34 $
+# $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Users;
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.5');
+use version; our $VERSION = qv('0.1.6');
 
 use Moose;
 extends 'Moose::Object';
@@ -47,7 +47,7 @@ WWW::Facebook::API::Users - Users methods for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Users version 0.1.5
+This document describes WWW::Facebook::API::Users version 0.1.6
 
 
 =head1 SYNOPSIS
