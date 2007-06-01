@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-31 17:58:27 -0700 (Thu, 31 May 2007) $
-# $Revision: 34 $
+# $Date: 2007-06-01 02:58:25 -0700 (Fri, 01 Jun 2007) $
+# $Revision: 48 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,18 +10,26 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.6');
+use version; our $VERSION = qv('0.2.0');
 
-use Moose;
-extends 'Moose::Object';
+sub base { return shift->{'base'}; }
 
-has 'base' => ( is => 'ro', isa => 'WWW::Facebook::API::Base' );
+sub new {
+    my ( $self, %args ) = @_;
+    my $class = ref $self || $self;
+    $self = bless \%args, $class;
 
-sub get             { shift->base->call( 'friends.get', @_ )          }
-sub get_app_users   { shift->base->call( 'friends.getAppUsers', @_ )  }
-sub are_friends     { shift->base->call( 'friends.areFriends', @_ )   }
+    delete $self->{$_} for grep !/base/, keys %$self;
+    $self->$_ for keys %$self;
 
-1; # Magic true value required at end of module
+    return $self;
+}
+
+sub get           { shift->base->call( 'friends.get',         @_ ) }
+sub get_app_users { shift->base->call( 'friends.getAppUsers', @_ ) }
+sub are_friends   { shift->base->call( 'friends.areFriends',  @_ ) }
+
+1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
@@ -31,7 +39,7 @@ WWW::Facebook::API::Friends - Friend methods for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Friends version 0.1.6
+This document describes WWW::Facebook::API::Friends version 0.2.0
 
 
 =head1 SYNOPSIS
@@ -47,6 +55,10 @@ Methods for accessing friends with L<WWW::Facebook::API>
 =head1 SUBROUTINES/METHODS 
 
 =over
+
+=item new
+
+Returns a new instance of this class.
 
 =item base
 
@@ -82,8 +94,7 @@ environment variables.
 
 =head1 DEPENDENCIES
 
-L<Moose>
-L<WWW::Facebook::API::Base>
+See L<WWW::Facebook::API>
 
 
 =head1 INCOMPATIBILITIES

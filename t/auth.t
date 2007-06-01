@@ -1,7 +1,7 @@
 #######################################################################
-# $Date: 2007-05-29 19:17:31 -0700 (Tue, 29 May 2007) $
-# $Revision: 17 $
-# $Author: unobe $
+# $Date: 2007-06-01 02:44:43 -0700 (Fri, 01 Jun 2007) $
+# $Revision: 46 $
+# $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
 use Test::More;
@@ -9,6 +9,10 @@ BEGIN {
     eval 'use Test::MockObject::Extends';
     if ($@) {
         plan skip_all => 'Tests require Test::MockObject::Extends';
+    }
+    eval 'use XML::Simple';
+    if ($@) {
+        plan skip_all => 'Tests require XML::Simple';
     }
     plan tests => 5;
 }
@@ -23,6 +27,7 @@ my $base = WWW::Facebook::API->new(
     api_key => 1,
     secret  => 1,
     mech    => Test::MockObject::Extends->new(WWW::Mechanize->new()),
+    parse_response => 1,
 );
 
 {

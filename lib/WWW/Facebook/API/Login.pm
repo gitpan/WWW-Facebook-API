@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-31 17:58:27 -0700 (Thu, 31 May 2007) $
-# $Revision: 34 $
+# $Date: 2007-06-01 02:58:25 -0700 (Fri, 01 Jun 2007) $
+# $Revision: 48 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,32 +10,45 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.6');
+use version; our $VERSION = qv('0.2.0');
 
-use Moose;
-extends 'Moose::Object';
+my @attributes = qw( base login_uri );
 
-has 'base' => (is => 'ro', isa => 'WWW::Facebook::API::Base',);
+sub base { return shift->{'base'}; }
 
-has 'login_uri' => (is => 'ro', isa => 'Str', required => 1,
-    default => sub { 'http://api.facebook.com/login.php' },
-);
+sub login_uri {
+    return shift->{'login_uri'} ||= 'http://api.facebook.com/login.php';
+}
+
+sub new {
+    my ( $self, %args ) = @_;
+    my $class = ref $self || $self;
+    $self = bless \%args, $class;
+
+    my $is_attribute = join '|', @attributes;
+    delete $self->{$_} for grep !/^($is_attribute)$/, keys %$self;
+    $self->$_ for keys %$self;
+
+    return $self;
+}
 
 sub _login_form {
     my $self = shift;
     $self->base->mech->submit_form(
         form_number => 1,
-        fields  => {
+        fields      => {
             email => sub {
                 print 'Email address: ';
-                chomp(my $email = <STDIN>);
+                chomp( my $email = <STDIN> );
                 return $email;
-            }->(),
-            pass  => sub {
+                }
+                ->(),
+            pass => sub {
                 print 'Password: ';
-                chomp(my $email = <STDIN>);
-                return $email;
-            }->(),
+                chomp( my $pass = <STDIN> );
+                return $pass;
+                }
+                ->(),
         },
         button => 'login',
     );
@@ -44,11 +57,16 @@ sub _login_form {
 
 sub login {
     my ( $self, $token ) = @_;
-    my $agent = $self->base->mech->agent_alias( 'Mac Mozilla' );
-    $self->base->mech->get(
-        $self->login_uri . join '&',
-            '?api_key='.$self->base->api_key, 'v=1.0', "auth_token=$token",
-    );
+    my $params = join '&', '?api_key=' . $self->base->api_key, 'v=1.0';
+    if ( $self->base->desktop ) {
+        croak "A desktop app must have a token passed in!\n" unless $token;
+        $params .= "&auth_token=$token";
+    }
+    my $url = $self->login_uri . $params;
+    system qq(open $url);
+    sleep 10;
+    my $agent = $self->base->mech->agent_alias('Mac Mozilla');
+    $self->base->mech->get( $self->login_uri . $params );
     if ( not $self->base->mech->forms ) {
         confess 'No form to submit!';
     }
@@ -56,10 +74,15 @@ sub login {
     if ( $self->base->errors->debug ) {
         carp $self->base->mech->content;
     }
-    if ( $self->base->mech->content !~ m{Logout</a>}mix ) {
-        confess 'Unable to login:'. $self->base->mech->content;
+    if (    $self->base->desktop
+        and $self->base->mech->content !~ m{Logout</a>}mix )
+    {
+        confess "Unable to login:\n\n" . $self->base->mech->content;
     }
-    $self->base->mech->agent( $agent );
+    if ( not $self->base->desktop ) {
+        ($token) = ( $self->base->mech->uri =~ /auth_token=(.+)$/g );
+    }
+    $self->base->mech->agent($agent);
     return $token;
 }
 
@@ -73,24 +96,26 @@ WWW::Facebook::API::Login - Ask for user login info
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Login version 0.1.6
+This document describes WWW::Facebook::API::Login version 0.2.0
 
 
 =head1 SYNOPSIS
 
-    use WWW::Facebook::API::Login;
+    use WWW::Facebook::API;
 
 
 =head1 DESCRIPTION
 
 This uses the L<WWW::Mechanize> object to login a user to the Facebook. Useful
-for quick testing, by replacing L<WWW::Facebook::API::Auth> in
-Client.pm with this module since this module subclasses that one.
-
+for quick testing.
 
 =head1 SUBROUTINES/METHODS 
 
 =over
+
+=item new
+
+Returns a new instance of this class.
 
 =item base
 
@@ -137,8 +162,7 @@ files or environment variables.
 
 =head1 DEPENDENCIES
 
-L<Moose>
-L<WWW::Facebook::API::Base>
+See L<WWW::Facebook::API>
 
 
 =head1 INCOMPATIBILITIES

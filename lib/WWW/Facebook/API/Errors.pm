@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-31 17:58:27 -0700 (Thu, 31 May 2007) $
-# $Revision: 34 $
+# $Date: 2007-06-01 02:58:25 -0700 (Fri, 01 Jun 2007) $
+# $Revision: 48 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,24 +10,40 @@ use strict;
 use warnings;
 use Carp;
 
-use version; our $VERSION = qv('0.1.6');
+use version; our $VERSION = qv('0.2.0');
 
-use Moose;
-extends 'Moose::Object';
-
-has 'base' => (is => 'ro', isa => 'WWW::Facebook::API::Base',);
-
-has 'debug' => ( is => 'rw', isa => 'Bool', default => 0 );
-has 'throw_errors' => (
-    is => 'ro', isa => 'Bool', required => 1, default => 1,
+our @attributes = qw(
+    base
+    debug   throw_errors    last_error
+    last_call_success
 );
-has 'last_call_success' => ( is => 'rw', isa => 'Bool' );
-has 'last_error' => ( is => 'rw', isa => 'Str' );
+
+sub base { return shift->{'base'}; }
+
+sub debug        { return shift->{'debug'}        ||= @_ ? shift != 0 : 0; }
+sub throw_errors { return shift->{'throw_errors'} ||= @_ ? shift != 0 : 1; }
+sub last_error   { return shift->{'last_error'}   ||= @_ ? shift      : 0; }
+
+sub last_call_success {
+    return shift->{'last_call_success'} ||= @_ ? shift != 0 : 0;
+}
+
+sub new {
+    my ( $self, %args ) = @_;
+    my $class = ref $self || $self;
+    $self = bless \%args, $class;
+
+    my $is_attribute = join '|', @attributes;
+    delete $self->{$_} for grep !/^($is_attribute)$/, keys %$self;
+    $self->$_ for keys %$self;
+
+    return $self;
+}
 
 sub log_string {
-    my ($self, $params, $response ) = @_;
+    my ( $self, $params, $response ) = @_;
 
-    my $string =  "uri = ".$self->base->server_uri;
+    my $string = "uri = " . $self->base->server_uri;
 
     $string .= "\n\nparams = \n";
     for ( keys %{$params} ) {
@@ -49,12 +65,12 @@ WWW::Facebook::API::Errors - Errors class for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Errors version 0.1.6
+This document describes WWW::Facebook::API::Errors version 0.2.0
 
 
 =head1 SYNOPSIS
 
-    use WWW::Facebook::API::Errors;
+    use WWW::Facebook::API;
 
 
 =head1 DESCRIPTION
@@ -65,6 +81,10 @@ Error methods and data used by L<WWW::Facebook::API::Base>
 =head1 SUBROUTINES/METHODS 
 
 =over
+
+=item new
+
+Returns a new instance of this class.
 
 =item base
 
@@ -94,10 +114,6 @@ Pass in the params and the response from a call, and it will make a formatted
 string out of it showing the server_uri, the parameters used, and the response
 received. Used by log_debug and log_error.
 
-=item meta
-
-L<Moose>
-
 =back
 
 
@@ -124,8 +140,7 @@ environment variables.
 
 =head1 DEPENDENCIES
 
-L<Moose>
-L<XML::Simple>
+See L<WWW::Facebook::API>
 
 
 =head1 INCOMPATIBILITIES

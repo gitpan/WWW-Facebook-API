@@ -1,5 +1,5 @@
 #######################################################################
-# $Date: 2007-05-31 17:58:27 -0700 (Thu, 31 May 2007) $ # $Revision: 34 $
+# $Date: 2007-06-01 02:58:25 -0700 (Fri, 01 Jun 2007) $ # $Revision: 48 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -11,105 +11,144 @@ use Carp;
 
 use WWW::Mechanize;
 use Time::HiRes qw(time);
-use XML::Simple qw(xml_in);
 use Digest::MD5;
 
-use version; our $VERSION = qv('0.1.6');
+use version; our $VERSION = qv('0.2.0');
 
-use Moose;
 use WWW::Facebook::API::Errors;
 
-has 'format' => ( is => 'rw', isa => 'Str', required => 1, default => 'XML' );
-has 'mech' => (is => 'rw', isa => 'WWW::Mechanize', required => 1,
-    default => sub {
-            WWW::Mechanize->new(
-                agent => "Perl-WWW-Facebook-API/$VERSION"
-            )
-    },
+our @attributes = qw(
+    api_key         secret              format
+    api_version     desktop             server_uri
+    skipcookie      popup               next
+    session_key     session_expires     session_uid
+    callback        mech                errors
+    parse_response
 );
-has 'server_uri' => (
-    is => 'rw', isa => 'Str', required => 1,
-    default => 'http://api.facebook.com/restserver.php',
-);
-has 'secret' => (is => 'rw', isa => 'Str', required => 1,
-    default => sub {
-        print q{Shhhh...please enter a secret: };
-        chomp(my $secret = <STDIN>);
-        return $secret;
-    },
-);
-has 'api_key' => (is => 'ro', isa => 'Str', required => 1,
-    default => sub {
-        print q{Please enter an API key: };
-        chomp(my $key = <STDIN>);
-        return $key;
-    },
-);
-has 'api_version' => (is => 'ro', isa => 'Str', required => 1,
-    default => '1.0',
-);
-has 'popup' => (is => 'rw', isa => 'Int', required => 1,
-    default => 0,
-);
-has 'skipcookie' => (is => 'rw', isa => 'Int', required => 1,
-    default => 0,
-);
-has 'next' => (is => 'rw', isa => 'Str', required => 1,
-    default => 0,
-);
-has 'session_key'   => ( is => 'rw', isa => 'Str', default => q{} );
-has 'session_expires'   => ( is => 'rw', isa => 'Str', default => q{} );
-has 'session_uid'   => ( is => 'rw', isa => 'Str', default => q{} );
-has 'desktop' => ( is => 'ro', isa => 'Bool', required => 1, default => 0 );
-has 'errors' => (
-    is => 'ro',
-    isa => 'WWW::Facebook::API::Errors',
-    required => 1,
-    default => sub { WWW::Facebook::API::Errors->new( base => $_[0] ) },
-);
+
+sub api_key {
+    my $self = shift;
+    $self->{'api_key'} = shift if @_;
+    if ( not $self->{'api_key'} ) {
+        print q{Please enter the API key: };
+        chomp( $self->{'api_key'} = <STDIN> );
+    }
+    return $self->{'api_key'};
+}
+
+sub secret {
+    my $self = shift;
+    $self->{'secret'} = shift if @_;
+    if ( not $self->{'secret'} ) {
+        print q{Please enter the secret: };
+        chomp( $self->{'secret'} = <STDIN> );
+    }
+    return $self->{'secret'};
+}
+
+sub format      { shift->_check_default( 'XML', 'format',      @_ ); }
+sub api_version { shift->_check_default( '1.0', 'api_version', @_ ); }
+sub desktop     { shift->_check_default( 0,     'desktop',     @_ ); }
+
+sub skipcookie { shift->_check_default( 0,  'skipcookie', @_ ); }
+sub popup      { shift->_check_default( 0,  'popup',      @_ ); }
+sub next       { shift->_check_default( '', 'next',       @_ ); }
+
+sub server_uri {
+    shift->_check_default( 'http://api.facebook.com/restserver.php',
+        'server_uri', @_, );
+}
+
+sub session_key     { shift->_check_default( '', 'session_key',     @_ ); }
+sub session_expires { shift->_check_default( '', 'session_expires', @_ ); }
+sub session_uid     { shift->_check_default( '', 'session_uid',     @_ ); }
+sub callback        { shift->_check_default( '', 'callback',        @_ ); }
+sub parse_response  { shift->_check_default( 0,  'parse_response',  @_ ); }
+
+sub mech {
+    shift->_check_default(
+        WWW::Mechanize->new( agent => "Perl-WWW-Facebook-API/$VERSION" ),
+        'mech', @_, );
+}
+
+sub errors {
+    my $self = shift;
+    $self->_check_default( WWW::Facebook::API::Errors->new( base => $self ),
+        'errors', @_, );
+}
+
+sub new {
+    my ( $self, %args ) = @_;
+    my $class = ref $self || $self;
+    $self = bless \%args, $class;
+
+    my $is_attribute = join '|', @attributes;
+    delete $self->{$_} for grep !/^($is_attribute)$/, keys %$self;
+    $self->$_ for sort @attributes;
+
+    return $self;
+}
 
 sub call {
     my ( $self, $method, %args, $params, $secret, $response ) = @_;
-    $self->errors->last_call_success( 1 );
-    $self->errors->last_error( undef );
+    $self->errors->last_call_success(1);
+    $self->errors->last_error(undef);
 
     $params = delete $args{'params'} || {};
     $params->{$_} = $args{$_} for keys %args;
 
     $secret = $args{'secret'} || $self->secret;
     $params->{'method'} ||= $method;
-    $self->_update_params( $params );
+    $self->_update_params($params);
     my $sig = _create_sig_for( $params, $secret );
     $response = $self->_post_request( $params, $secret );
 
-    if ($self->errors->debug) {
-        $params->{ 'sig'    }   = $sig;
-        $params->{ 'secret' }   = $secret;
+    if ( $params->{'callback'} ) {
+        $response =~ s/^$params->{'callback'}.+(?=\<\?xml)(.+).\);$/$1/;
+    }
+    $response =~ s/(?<!\\)(\\.)/qq("$1")/gee unless $self->desktop;
+
+    if ( $self->errors->debug ) {
+        $params->{'sig'}    = $sig;
+        $params->{'secret'} = $secret;
         carp $self->errors->log_string( $params, $response );
     }
     if ( $response =~ m!<error_code>(\d+)|^{"error_code"\D(\d+)!mx ) {
-        $self->errors->last_call_success( 0 );
-        $self->errors->last_error( $1 );
+        $params->{'sig'}    = $sig;
+        $params->{'secret'} = $secret;
+        $self->errors->last_call_success(0);
+        $self->errors->last_error($1);
 
         if ( $self->errors->throw_errors ) {
             confess "Error during REST $method call:\n",
-                    $self->errors->log_string( $params, $response );
+                $self->errors->log_string( $params, $response );
         }
     }
 
-    return $response if $params->{'format'} eq 'JSON';
+    return $response unless $self->parse_response;
 
-    return $self->_make_xml_for( $response );
+    return $self->_parse( $params->{'format'}, $response );
 }
 
-sub _make_xml_for {
-    my ( $self, $response, $xml ) = @_;
-    $xml = xml_in( $response,
+sub _parse {
+    my ( $self, $format, $response, $xml ) = @_;
+
+    if ( $format eq 'JSON' ) {
+        eval 'use JSON::XS';
+        croak "Unable to load JSON module for parsing\n" if $@;
+        return from_json $response;
+    }
+    eval 'use XML::Simple qw(xml_in)';
+    croak "Unable to load XML module for parsing\n" if $@;
+
+    $xml = xml_in(
+        $response,
         ForceArray => 1,
-        KeepRoot => !$self->simple,
+        KeepRoot   => !$self->simple,
     );
 
     if ( $self->simple ) {
+
         # remove meta-data
         for ( keys %$xml ) {
             delete $xml->{$_} if /^x(ml|si)|list/;
@@ -117,7 +156,7 @@ sub _make_xml_for {
 
         # keys is screwy: will give uninit warnings otherwise
         if ( keys %$xml ) {
-            return $xml->{ [keys %$xml]->[0] } if keys %$xml == 1;
+            return $xml->{ [ keys %$xml ]->[0] } if keys %$xml == 1;
         }
         elsif ( exists $xml->{$_}->[0]->{content} ) {
             return $xml->{content};
@@ -130,29 +169,30 @@ sub _update_params {
     my ( $self, $params ) = @_;
     if ( $params->{'method'} !~ m/^auth/mx ) {
         $params->{'session_key'} = $self->session_key;
+        $params->{'callback'} ||= $self->callback if $self->callback;
     }
-    $params->{ 'call_id' }  =   time if $self->desktop;
-    $params->{ 'method'  }  =   "facebook.$params->{'method'}";
-    $params->{ 'api_key' }  ||= $self->api_key;
-    $params->{ 'format'  }  ||= $self->format;
-    $params->{ 'v'       }  ||= $self->api_version;
+    $params->{'call_id'} = time if $self->desktop;
+    $params->{'method'} = "facebook.$params->{'method'}";
+    $params->{'api_key'} ||= $self->api_key;
+    $params->{'format'}  ||= $self->format;
+    $params->{'v'}       ||= $self->api_version;
 
     for (qw/popup next skipcookie/) {
         if ( $self->$_ ) { $params->{$_} = q{} }
     }
     return;
- }
+}
 
 sub _post_request {
-    my ($self, $params, $secret, $sig, $post_params ) = @_;
+    my ( $self, $params, $secret, $sig, $post_params ) = @_;
 
-    _reformat_params( $params );
+    _reformat_params($params);
     $sig = _create_sig_for( $params, $secret );
     $post_params = [ map { $_, $params->{$_} } sort keys %$params ];
     push @$post_params, 'sig', $sig;
 
     $self->mech->post( $self->server_uri, $post_params );
-    
+
     return $self->mech->content;
 }
 
@@ -167,16 +207,25 @@ sub _reformat_params {
 }
 
 sub _create_sig_for {
-    my ($params, $secret ) = @_;
+    my ( $params, $secret ) = @_;
 
     my $md5 = Digest::MD5->new;
-    $md5->add( map { "$_=$params->{$_}" } sort keys %$params );
-    $md5->add( $secret );
+    $md5->add( map {"$_=$params->{$_}"} sort keys %$params );
+    $md5->add($secret);
 
     return $md5->hexdigest;
 }
 
-1; # Magic true value required at end of module
+sub _check_default {
+    my $self      = shift;
+    my $default   = shift;
+    my $attribute = shift;
+    return $self->{$attribute} = shift if @_;
+    return $self->{$attribute} if defined $self->{$attribute};
+    return $self->{$attribute} = $default;
+}
+
+1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
@@ -186,12 +235,12 @@ WWW::Facebook::API::Base - Base class for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Base version 0.1.6
+This document describes WWW::Facebook::API::Base version 0.2.0
 
 
 =head1 SYNOPSIS
 
-    use WWW::Facebook::API::Base;
+    use WWW::Facebook::API;
 
 
 =head1 DESCRIPTION
@@ -203,17 +252,27 @@ Base methods and data for WWW::Facebook::API and friends.
 
 =over
 
+=item new
+
+Returns a new instance of this class.
+
 =item format
 
 The default format to use if none is supplied with an API method call.
 Currently available options are XML and JSON. Defaults to XML.
 
+=item parse_response
+
+Defaults to 0. If set to true, if the format is set to XML, L<XML::Simple> is
+used to parse the response from the server. Likewise, if the format is set to
+JSON, <JSON::XS> is used JSON to return a Perlish data structure.
+
 =item call
 
 The method which other submodules within WWW::Facebook::API use
 to call the Facebook REST interface. It takes in a hash signifying the method
-to be called (e.g., 'auth.getSession'), the parameters to pass through, and
-(optionally) the secret to use.
+to be called (e.g., 'auth.getSession'), and key/value pairs for the parameters
+to use.
 
 =item mech
 
@@ -223,15 +282,16 @@ Shouldn't be needed for anything. The agent_alias is set to
 
 =item server_uri
 
-The server uri to access the Facebook REST server. See the Facebook API
+The server uri to access the Facebook REST server. Default is
+C<'http://api.facebook.com/restserver.php'>. See the Facebook API
 documentation.
 
 =item secret
 
 For a desktop application, this is the secret that is used for calling
-create_token and get_session. See the Facebook API documentation under
-Authentication. If no secret is passed in to the C<new> method, it will prompt
-for one to be entered from STDIN.
+C<auth->create_token> and C<auth->get_session>. See the Facebook API
+documentation under Authentication. If no secret is passed in to the C<new>
+method, it will prompt for one to be entered from STDIN.
 
 =item api_key
 
@@ -267,6 +327,10 @@ data that handles errors and debug information.
 Which version to use (default is "1.0", which is the only one supported
 currently. Corresponds to the argument C<v> that is passed in to methods as a
 parameter.
+
+=item callback
+
+The callback URL for your application. See the Facebook API documentation.
 
 =item next
 
@@ -304,12 +368,22 @@ response.
 Creates signature (md5) for the post parameters, and returns a reference to
 the post parameters with the sig as the last element in the list.
 
+=item _parse
+
+Calls either JSON::XS or XML::Simple to parse the response received from the
+Facebook server. Returns the response via C<call>.
+
 =back
 
 
 =head1 DIAGNOSTICS
 
 =over
+
+=item C< Unable to load %s module for parsing >
+
+L<JSON::XS> or L<XML::Simple> is cannot be loaded. Make sure it is installed
+if you are setting parse_response to 1.
 
 =item C< Error during REST call: %s >
 
@@ -331,12 +405,7 @@ environment variables.
 
 =head1 DEPENDENCIES
 
-L<Moose>
-L<WWW::Mechanize>
-L<XML::Simple>
-L<Digest::MD5>
-L<Time::HiRes>
-L<Crypt::SSLeay>
+See L<WWW::Facebook::API>
 
 
 =head1 INCOMPATIBILITIES

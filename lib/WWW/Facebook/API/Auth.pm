@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-05-31 17:58:27 -0700 (Thu, 31 May 2007) $
-# $Revision: 34 $
+# $Date: 2007-06-01 03:02:37 -0700 (Fri, 01 Jun 2007) $
+# $Revision: 50 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,49 +10,65 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.6');
+use version; our $VERSION = qv('0.2.0');
 
-use Moose;
-extends 'Moose::Object';
+sub base { return shift->{'base'}; }
 
-has 'base' => ( is => 'ro', isa => 'WWW::Facebook::API' );
+sub new {
+    my ( $self, %args ) = @_;
+    my $class = ref $self || $self;
+    $self = bless \%args, $class;
 
-sub create_token    { shift->base->call( 'auth.createToken', @_ )   }
+    delete $self->{$_} for grep !/base/, keys %$self;
+    $self->$_ for keys %$self;
+
+    return $self;
+}
+
+sub create_token {
+    my $self = shift;
+    my $token = $self->base->call( 'auth.createToken', @_ );
+    $token =~ s/\W//g if $self->base->format eq 'JSON';
+    return $token;
+}
 
 sub get_session {
     my $self = shift;
 
     if ( $self->base->desktop ) {
+
         # swap to using https for the sake of getting the session secret
-        $self->base->server_uri( _make_secure( $self->base->server_uri ) )
+        $self->base->server_uri( _make_secure( $self->base->server_uri ) );
     }
 
     my $response = $self->base->call( 'auth.getSession', @_ );
 
-    my %field = qw/
-        session_key session_key
-        expires     session_expires
-        uid         session_uid
-    /;
+    my %field = qw(
+        session_key     session_key
+        expires         session_expires
+        uid             session_uid
+    );
 
     if ( $self->base->desktop ) {
         $field{'secret'} = 'secret';
         $self->base->server_uri( _make_unsecure( $self->base->server_uri ) );
     }
 
-    if ($self->base->format eq 'XML') {
-        my $value = $self->base->simple
+    if ( $self->base->format eq 'XML' ) {
+
+        my $value =
+              $self->base->simple
             ? $response
             : $response->{auth_getSession_response}->[0];
 
-        while ( my ($key, $val) = each %field ) {
+        while ( my ( $key, $val ) = each %field ) {
             $self->base->$val( $value->{$key}->[0] );
         }
     }
-    else { # JSON
-        while ( my ($key, $val) = each %field ) {
+    else {    # JSON
+        while ( my ( $key, $val ) = each %field ) {
             $response =~ /$key"\W+([\w-]+)/g;
-            $self->base->$val( $1 );
+            $self->base->$val($1);
         }
     }
     return $response;
@@ -61,8 +77,7 @@ sub get_session {
 sub logout {
     my $self = shift;
     $self->base->mech->post( 'http://www.facebook.com/logout.php',
-                             { confirm => 1 }
-    );
+        { confirm => 1 } );
 }
 
 sub _make_secure {
@@ -87,12 +102,12 @@ WWW::Facebook::API::Auth - Authentication utilities for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Auth version 0.1.6
+This document describes WWW::Facebook::API::Auth version 0.2.0
 
 
 =head1 SYNOPSIS
 
-    use WWW::Facebook::API::Auth;
+    use WWW::Facebook::API;
 
 
 =head1 DESCRIPTION
@@ -102,6 +117,14 @@ Methods for accessing auth with L<WWW::Facebook::API>
 =head1 SUBROUTINES/METHODS 
 
 =over
+
+=item new
+
+Returns a new instance of this class.
+
+=item base
+
+The L<WWW::Facebook::API::Base> object to use to access settings.
 
 =item create_token
 
@@ -153,8 +176,7 @@ environment variables.
 
 =head1 DEPENDENCIES
 
-L<Moose>
-L<WWW::Facebook::API>
+See L<WWW::Facebook::API>
 
 =head1 INCOMPATIBILITIES
 

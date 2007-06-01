@@ -4,18 +4,26 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.6');
+use version; our $VERSION = qv('0.2.0');
 
-use Moose;
-extends 'Moose::Object';
+sub base { return shift->{'base'}; }
 
-has 'base' => ( is => 'ro', isa => 'WWW::Facebook::API::Base' );
+sub new {
+    my ( $self, %args ) = @_;
+    my $class = ref $self || $self;
+    $self = bless \%args, $class;
+
+    delete $self->{$_} for grep !/base/, keys %$self;
+    $self->$_ for keys %$self;
+
+    return $self;
+}
 
 sub refresh_img_src { shift->base->call( 'fbml.refreshImgSrc', @_ ) }
 sub refresh_ref_url { shift->base->call( 'fbml.refreshRefUrl', @_ ) }
 sub set_ref_handle  { shift->base->call( 'fbml.setRefHandle',  @_ ) }
 
-1; # Magic true value required at end of module
+1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
@@ -25,7 +33,7 @@ WWW::Facebook::API::FBML - FBML methods for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::FBML version 0.1.6
+This document describes WWW::Facebook::API::FBML version 0.2.0
 
 
 =head1 SYNOPSIS
@@ -39,6 +47,10 @@ Methods for updating FBML references with L<WWW::Facebook::API>
 =head1 SUBROUTINES/METHODS 
 
 =over
+
+=item new
+
+Returns a new instance of this class.
 
 =item base
 
@@ -72,8 +84,7 @@ environment variables.
 
 =head1 DEPENDENCIES
 
-L<Moose>
-L<WWW::Facebook::API::Base>
+See L<WWW::Facebook::API>
 
 
 =head1 INCOMPATIBILITIES

@@ -10,12 +10,20 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.6');
+use version; our $VERSION = qv('0.2.0');
 
-use Moose;
-extends 'Moose::Object';
+sub base { return shift->{'base'}; }
 
-has 'base' => ( is => 'ro', isa => 'WWW::Facebook::API::Base' );
+sub new {
+    my ( $self, %args ) = @_;
+    my $class = ref $self || $self;
+    $self = bless \%args, $class;
+
+    delete $self->{$_} for grep !/base/, keys %$self;
+    $self->$_ for keys %$self;
+
+    return $self;
+}
 
 sub publish_story_to_user {
     shift->base->call( 'feed.publishStoryToUser', @_ );
@@ -25,7 +33,7 @@ sub publish_action_of_user {
     shift->base->call( 'feed.publishActionOfUser', @_ );
 }
 
-1; # Magic true value required at end of module
+1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
@@ -35,7 +43,7 @@ WWW::Facebook::API::Feed - Feed methods for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Feed version 0.1.6
+This document describes WWW::Facebook::API::Feed version 0.2.0
 
 
 =head1 SYNOPSIS
@@ -49,6 +57,10 @@ Methods for accessing photos with L<WWW::Facebook::API>
 =head1 SUBROUTINES/METHODS 
 
 =over
+
+=item new
+
+Returns a new instance of this class.
 
 =item base
 
@@ -78,8 +90,7 @@ environment variables.
 
 =head1 DEPENDENCIES
 
-L<Moose>
-L<WWW::Facebook::API::Base>
+See L<WWW::Facebook::API>
 
 
 =head1 INCOMPATIBILITIES

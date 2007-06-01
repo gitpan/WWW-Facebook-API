@@ -10,17 +10,29 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.1.6');
+use version; our $VERSION = qv('0.2.0');
 
-use Moose;
-extends 'Moose::Object';
+sub base { return shift->{'base'}; }
 
-has 'base' => ( is => 'ro', isa => 'WWW::Facebook::API::Base' );
+sub new {
+    my ( $self, %args ) = @_;
+    my $class = ref $self || $self;
+    $self = bless \%args, $class;
 
-sub set_FBML    { shift->base->call( 'profile.setFBML', @_ )  }
-sub get_FBML    { shift->base->call( 'profile.getFBML', @_ )  }
+    delete $self->{$_} for grep !/base/, keys %$self;
+    $self->$_ for keys %$self;
 
-1; # Magic true value required at end of module
+    return $self;
+}
+
+sub set_fbml { shift->base->call( 'profile.setFBML', @_ ) }
+sub get_fbml { shift->base->call( 'profile.getFBML', @_ ) }
+
+# Just in case ...
+sub set_FBML { shift->base->call( 'profile.setFBML', @_ ) }
+sub get_FBML { shift->base->call( 'profile.getFBML', @_ ) }
+
+1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
@@ -30,7 +42,7 @@ WWW::Facebook::API::Profile - Profile methods for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Profile version 0.1.6
+This document describes WWW::Facebook::API::Profile version 0.2.0
 
 
 =head1 SYNOPSIS
@@ -45,16 +57,28 @@ Methods for accessing photos with L<WWW::Facebook::API>
 
 =over
 
+=item new
+
+Returns a new instance of this class.
+
 =item base
 
 The L<WWW::Facebook::API::Base> object to use to make calls to
 the REST server.
 
-=item set_FBML
+=item set_fbml
 
 The profile.setFBML method of the Facebook API.
 
-=item get_FBML
+=item get_fbml
+
+The profile.getFBML method of the Facebook API.
+
+=item set_FBML (DEPRECATED)
+
+The profile.setFBML method of the Facebook API.
+
+=item get_FBML (DEPRECATED)
 
 The profile.getFBML method of the Facebook API.
 
@@ -73,8 +97,7 @@ environment variables.
 
 =head1 DEPENDENCIES
 
-L<Moose>
-L<WWW::Facebook::API::Base>
+See L<WWW::Facebook::API>
 
 
 =head1 INCOMPATIBILITIES
