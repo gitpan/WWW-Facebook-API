@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-01 02:58:25 -0700 (Fri, 01 Jun 2007) $
-# $Revision: 48 $
+# $Date: 2007-06-02 01:26:53 -0700 (Sat, 02 Jun 2007) $
+# $Revision: 66 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.2.0');
+use version; our $VERSION = qv('0.2.2');
 
 sub base { return shift->{'base'}; }
 
@@ -26,7 +26,8 @@ sub new {
 }
 
 sub get_info           { shift->base->call( 'users.getInfo',         @_ ); }
-sub get_logged_in_user { shift->base->call( 'users.getLoggedInUser', @_ ) }
+sub get_logged_in_user { shift->base->call( 'users.getLoggedInUser', @_ ); }
+sub is_app_added       { shift->base->call( 'users.isAppAdded',      @_ ); }
 
 1;    # Magic true value required at end of module
 __END__
@@ -38,7 +39,7 @@ WWW::Facebook::API::Users - Users methods for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Users version 0.2.0
+This document describes WWW::Facebook::API::Users version 0.2.2
 
 
 =head1 SYNOPSIS
@@ -71,6 +72,12 @@ The users.getInfo method of the Facebook API.
 =item get_logged_in_user
 
 The users.getLoggedInUser method of the Facebook API.
+
+=item is_app_added
+
+The users.getIsAppAdded method of the Facebook API. (Currently not documented,
+but is present in the PHP client.) Example:
+    $user_has_app = $client->users->is_app_added;
 
 =back
 

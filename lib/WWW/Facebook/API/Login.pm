@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-01 06:12:16 -0700 (Fri, 01 Jun 2007) $
-# $Revision: 53 $
+# $Date: 2007-06-02 01:26:53 -0700 (Sat, 02 Jun 2007) $
+# $Revision: 66 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.2.1');
+use version; our $VERSION = qv('0.2.2');
 
 my @attributes = qw( base login_uri );
 
@@ -93,7 +93,7 @@ WWW::Facebook::API::Login - Ask for user login info
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Login version 0.2.1
+This document describes WWW::Facebook::API::Login version 0.2.2
 
 
 =head1 SYNOPSIS

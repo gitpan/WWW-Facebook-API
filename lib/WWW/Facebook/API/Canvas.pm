@@ -4,8 +4,7 @@
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
-package WWW::Facebook::API::Events;
-
+package WWW::Facebook::API::Canvas;
 use warnings;
 use strict;
 use Carp;
@@ -25,20 +24,53 @@ sub new {
     return $self;
 }
 
-sub get         { shift->base->call( 'events.get',        @_ ) }
-sub get_members { shift->base->call( 'events.getMembers', @_ ) }
+sub get_fb_params {
+    my ( $self, $q ) = @_;
+    return {
+        map { (/^fb_sig_(.*)/)[0] => $q->param($_) }
+            sort grep {/^fb_sig_/} $q->param
+    };
+}
 
-1;    # Magic true value required at end of module
+sub validate_sig {
+    my ( $self, $q ) = @_;
+    my $fb_params = $self->get_fb_params($q);
+    return $fb_params
+        if $self->base->validate_sig( $fb_params, $q->param('fb_sig') );
+    return;
+}
+
+sub get_user {
+    my ( $self, $q ) = @_;
+    my $fb_params = $self->validate_sig($q);
+
+    return $fb_params->{'user'} if $fb_params;
+    return "";
+}
+
+sub in_fb_canvas {
+    my ( $self, $q ) = @_;
+    return $self->get_fb_params($q)->{'in_canvas'};
+}
+
+sub in_frame {
+    my ( $self, $q ) = @_;
+    my $fb_params = $self->get_fb_params($q);
+    return 1 if $fb_params->{'in_canvas'} or $fb_params->{'in_frame'};
+    return;
+}
+
+1;
 __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Events - Events for Client
+WWW::Facebook::API::Canvas - Facebook canvas related methods
 
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Events version 0.2.2
+This document describes WWW::Facebook::API::Canvas version 0.2.2
 
 
 =head1 SYNOPSIS
@@ -48,8 +80,10 @@ This document describes WWW::Facebook::API::Events version 0.2.2
 
 =head1 DESCRIPTION
 
-Methods for accessing events with L<WWW::Facebook::API>
+Methods for using the canvas with L<WWW::Facebook::API>
 
+The C<$q> parameter should implement the param method (for example
+a L<CGI> or L<Apache::Request> object).
 
 =head1 SUBROUTINES/METHODS 
 
@@ -64,13 +98,25 @@ Returns a new instance of this class.
 The L<WWW::Facebook::API::Base> object to use to make calls to
 the REST server.
 
-=item get
+=item get_user($q)
 
-The events.get method of the Facebook API.
+Return the UID of the canvas user or "" if it does not exist.
 
-=item get_members
+=item get_fb_params($q)
 
-The events.getMembers method of the Facebook API.
+Return a hash reference to the signed parameters sent via Facebook.
+
+=item validate_sig($q)
+
+Return true if the signature on the $q object is valid for this application.
+
+=item in_fb_canvas($q)
+
+Return true if inside a canvas.
+
+=item in_frame($q)
+
+Return true if inside a frame or canvas.
 
 =back
 
@@ -83,7 +129,7 @@ not have any unique error messages.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Events requires no configuration files or
+WWW::Facebook::API::Canvas requires no configuration files or
 environment variables.
 
 

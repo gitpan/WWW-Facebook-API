@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-01 06:12:16 -0700 (Fri, 01 Jun 2007) $
-# $Revision: 53 $
+# $Date: 2007-06-02 01:26:53 -0700 (Sat, 02 Jun 2007) $
+# $Revision: 66 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.2.1');
+use version; our $VERSION = qv('0.2.2');
 
 use base 'WWW::Facebook::API::Base';
 
@@ -23,7 +23,7 @@ our @namespaces = qw(
     Feed        FQL         Friends
     Groups      Login       Notifications
     Photos      Profile     Update
-    Users
+    Users       Canvas
 );
 
 my $create_attribute_code = sub {
@@ -71,7 +71,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.2.1
+This document describes WWW::Facebook::API version 0.2.2
 
 
 =head1 SYNOPSIS
@@ -142,6 +142,7 @@ methods C<call>, C<new>, and its internal methods ):
     my $client = WWW::Facebook::API->new(
         format          => 'JSON',
         parse_response  => 1,
+        parse_params    => { utf8 => 1, allow_nonref => 1 },
         server_uri      => 'http://www.facebook.com/restserver.php',
         secret          => 'application_secret_key',
         api_key         => 'application_key',
@@ -176,6 +177,10 @@ All method names from the Facebook API are lower_cased instead of CamelCase:
 You only need ot call $client->auth->create_token if you're running a Desktop
 application. Otherwise, the token is created during the user's login, which is
 sent to your callback URL as a single parameter (auth_token).
+
+=item canvas
+
+See L<WWW::Facebook::API::Canvas>.
 
 =item login
 
@@ -332,7 +337,6 @@ WWW::Facebook::API requires no configuration files or environment variables.
 
 L<version>
 L<WWW::Mechanize>
-L<XML::Simple>
 L<Digest::MD5>
 L<Crypt::SSLeay>
 

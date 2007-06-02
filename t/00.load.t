@@ -1,10 +1,10 @@
 #######################################################################
-# $Date: 2007-05-31 12:37:20 -0700 (Thu, 31 May 2007) $
-# $Revision: 26 $
-# $Author: unobe $
+# $Date: 2007-06-02 01:22:42 -0700 (Sat, 02 Jun 2007) $
+# $Revision: 65 $
+# $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
-use Test::More tests => 17;
+use Test::More tests => 18;
 
 BEGIN {
     use_ok( 'WWW::Facebook::API::Errors' );
