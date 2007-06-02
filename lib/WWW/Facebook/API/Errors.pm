@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-02 01:26:53 -0700 (Sat, 02 Jun 2007) $
-# $Revision: 66 $
+# $Date: 2007-06-02 02:01:03 -0700 (Sat, 02 Jun 2007) $
+# $Revision: 70 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use strict;
 use warnings;
 use Carp;
 
-use version; our $VERSION = qv('0.2.2');
+use version; our $VERSION = qv('0.2.3');
 
 our @attributes = qw(
     base
@@ -65,7 +65,7 @@ WWW::Facebook::API::Errors - Errors class for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Errors version 0.2.2
+This document describes WWW::Facebook::API::Errors version 0.2.3
 
 
 =head1 SYNOPSIS
