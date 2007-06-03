@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-03 02:17:24 -0700 (Sun, 03 Jun 2007) $
-# $Revision: 79 $
+# $Date: 2007-06-03 14:04:10 -0700 (Sun, 03 Jun 2007) $
+# $Revision: 85 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.0');
+use version; our $VERSION = qv('0.3.1');
 
 sub base { return shift->{'base'}; }
 
@@ -39,11 +39,9 @@ __END__
 
 WWW::Facebook::API::Photos - Photos methods for Client
 
-
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Photos version 0.3.0
-
+This document describes WWW::Facebook::API::Photos version 0.3.1
 
 =head1 SYNOPSIS
 
@@ -92,7 +90,6 @@ The photos.upload method of the Facebook API.
 
 =back
 
-
 =head1 DIAGNOSTICS
 
 None.
@@ -102,16 +99,13 @@ None.
 WWW::Facebook::API::Photos requires no configuration files or
 environment variables.
 
-
 =head1 DEPENDENCIES
 
 See L<WWW::Facebook::API>
 
-
 =head1 INCOMPATIBILITIES
 
 None reported.
-
 
 =head1 BUGS AND LIMITATIONS
 
@@ -121,11 +115,9 @@ Please report any bugs or feature requests to
 C<bug-www-facebook-api@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
-
 =head1 AUTHOR
 
 David Romano  C<< <unobe@cpan.org> >>
-
 
 =head1 LICENSE AND COPYRIGHT
 
@@ -133,7 +125,6 @@ Copyright (c) 2007, David Romano C<< <unobe@cpan.org> >>. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
-
 
 =head1 DISCLAIMER OF WARRANTY
 
