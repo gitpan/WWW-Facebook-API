@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-02 02:01:03 -0700 (Sat, 02 Jun 2007) $
-# $Revision: 70 $
+# $Date: 2007-06-03 02:17:24 -0700 (Sun, 03 Jun 2007) $
+# $Revision: 79 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.2.3');
+use version; our $VERSION = qv('0.3.0');
 
 sub base { return shift->{'base'}; }
 
@@ -36,7 +36,8 @@ sub validate_sig {
     my ( $self, $q ) = @_;
     my $fb_params = $self->get_fb_params($q);
     return $fb_params
-        if $self->base->validate_sig( $fb_params, $q->param('fb_sig') );
+        if $self->base->verify_sig( params => $fb_params,
+          sig => $q->param('fb_sig') );
     return;
 }
 
@@ -70,7 +71,7 @@ WWW::Facebook::API::Canvas - Facebook canvas related methods
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Canvas version 0.2.3
+This document describes WWW::Facebook::API::Canvas version 0.3.0
 
 
 =head1 SYNOPSIS
