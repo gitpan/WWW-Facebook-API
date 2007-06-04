@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-03 14:04:10 -0700 (Sun, 03 Jun 2007) $
-# $Revision: 85 $
+# $Date: 2007-06-03 21:39:50 -0700 (Sun, 03 Jun 2007) $
+# $Revision: 92 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.1');
+use version; our $VERSION = qv('0.3.2');
 
 sub base { return shift->{'base'}; }
 
@@ -40,27 +40,26 @@ sub create_token {
     $self->base->parse($parse);
 
     return $token;
-} 
+}
 
 sub get_session {
     my $self = shift;
 
     my $token = shift;
     if ( $self->base->desktop ) {
-        $token ||= $self->base->create_token;
-        (my $uri_https = $self->base->server_uri) =~ s{http://}{https://}mx;
-        $self->base->server_uri( $uri_https );
+        croak "Token needed for call to get_session" if not defined $token;
+        ( my $uri_https = $self->base->server_uri ) =~ s{http://}{https://}mx;
+        $self->base->server_uri($uri_https);
     }
-    else {
-        $token ||= $self->base->secret;
-    }
+    $token ||= $self->base->secret;
 
     my ( $format, $parse ) = ( $self->base->format, $self->base->parse );
 
     $self->base->format('JSON');
     $self->base->parse(0);
 
-    my $response = $self->base->call( 'auth.getSession', auth_token => $token );
+    my $response =
+        $self->base->call( 'auth.getSession', auth_token => $token );
 
     $self->base->format($format);
     $self->base->parse($parse);
@@ -73,8 +72,8 @@ sub get_session {
 
     if ( $self->base->desktop ) {
         $field{'secret'} = 'secret';
-        (my $uri_http = $self->base->server_uri) =~ s{https://}{http://}mx;
-        $self->base->server_uri( $uri_http );
+        ( my $uri_http = $self->base->server_uri ) =~ s{https://}{http://}mx;
+        $self->base->server_uri($uri_http);
     }
 
     while ( my ( $key, $val ) = each %field ) {
@@ -86,53 +85,38 @@ sub get_session {
     return;
 }
 
-
 sub login {
     my ( $self, %args ) = @_;
-    my $token = $self->base->secret;
 
-    my $url = $self->base->get_login_url;
+    croak "Cannot use login method with web app" unless $self->base->desktop;
 
-    if ( $self->base->desktop ) {
-        $token = $self->create_token;
-        $url   = $self->base->get_login_url( auth_token => $token );
-    }
+    my $token = $self->create_token;
+    my $url = $self->base->get_login_url( auth_token => $token );
+    my $browser =
+          $args{'browser'} ? $args{'browser'}
+        : $^O =~ /darwin/ ? 'open'
+        : $^O =~ /MSWin/  ? 'start'
+        :                   '';
 
-    my $agent = $self->base->mech->agent_alias('Mac Mozilla');
-    $self->base->mech->get( $url );
+    croak "Don't know how to open browser for the system $^O" if not $browser;
 
-    confess 'No form to submit!' unless $self->base->mech->forms;
+    # Open browser have user login to Facebook app
+    system qq($browser "$url");
 
-    $self->base->mech->submit_form(
-        form_number => 1,
-        fields      => {
-            email => $args{'email'},
-            pass  => $args{'pass'},
-        },
-        button => 'login',
-    );
+    # Give the user time to log in
+    $args{'sleep'} ||= 15;
+    sleep $args{'sleep'};
 
-    carp $self->base->mech->content if $self->base->debug;
+    print STDERR "Return $token token\n";
 
-    if ( not $self->base->desktop ) {
-        $token = ( $self->base->mech->uri =~ /auth_token=(.+)$/ )[0]
-    }
-    elsif ( $self->base->mech->content !~ m{Logout</a>}mix ) {
-        my $error = "Unable to login to Facebook using WWW::Mechanize";
-        $error .= ': '.$self->base->mech->content if $self->base->debug;
-
-        confess $error if $self->base->throw_errors;
-        carp $error;
-    }
-
-    $self->base->mech->agent($agent);
     return $token;
 }
 
 sub logout {
     my $self = shift;
-    $self->base->mech->post( 'http://www.facebook.com/logout.php',
+    $self->base->ua->post( 'http://www.facebook.com/logout.php',
         { confirm => 1 } );
+    return;
 }
 
 1;
@@ -144,7 +128,7 @@ WWW::Facebook::API::Auth - Authentication utilities for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Auth version 0.3.1
+This document describes WWW::Facebook::API::Auth version 0.3.2
 
 =head1 SYNOPSIS
 
@@ -170,7 +154,7 @@ to access settings.)
 =item create_token()
 
 auth.createToken of the Facebook API. Will always return the token string,
-regardles of the 'parse' setting in L<WWW::Facebook::API>.
+regardles of the C<parse> setting in L<WWW::Facebook::API>.
 
 =item get_session( $auth_token )
 
@@ -180,12 +164,18 @@ a web app, the C<secret> in L<WWW::Facebook::API> will be used if
 C<$auth_token> isn't passed in. Either way, it automatically sets
 C<session_uid> C<session_key> and C<session_expires>. Nothing is returned.
 
-=item login( user => $username, pass => $password )
+=item login( sleep => $sleep , browser => $browser_cmd )
 
-Not part of the official Facebook API. Logs in to Facebook using
-L<WWW::Mechanize>. The 'user' and 'pass' parameters must be supplied. If you
-have a desktop app, C<create_token> will automatically be called. Returns the
-session token.
+Only for desktop apps. It first calls C<create_token> to get a valid token. It
+then opens the user's default browser and have them sign in to the Facebook
+application. If C<browser> is passed in, the module will use that string as
+the command to execute, e.g.:
+
+    system qq($browser_cmd "$login_url");
+
+After the browser is called, it will pause for C<$sleep> seconds (or 15
+seconds if C<$sleep> is not defined), to give the user time to log in. The
+method returns the session token created by C<create_token>.
 
 =item logout()
 
@@ -199,10 +189,21 @@ http://developers.facebook.com/documentation.php?v=1.0&doc=auth )
 
 =over
 
-=item C< Unable to login to Facebook using WWW::Mechanize: %s >
+=item C< Token needed for call to get_session >
 
-The login() method was not able to sign in to Facebook using WWW::Mechanize.
-The HTML for the page that was retrieve is returned if in debugging mode.
+You are running a desktop app and you did not pass a token into get_session.
+You can create a token by calling create_token() or (better) login().
+
+=item C< Don't know how to open browser for the system %s >
+
+The module doesn't know the command to use to open a browser on the given
+system. If you passed in C<browser> to login(), it can use that string as the
+command to execute to open the login url.
+
+=item C< Cannot use login method with web app >
+
+The login() method is not able to be used to sign in when using a web app. See
+the Facebook TOS A.9.iv.
 
 =back
 

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                WWW-Facebook-API
-version:             v0.3.1
+version:             v0.3.2
 abstract:            Facebook API implementation
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.32
@@ -9,9 +9,9 @@ requires:
     Crypt::SSLeay:                 0
     Digest::MD5:                   0
     JSON::Any:                     0
+    LWP::UserAgent:                0
     Time::HiRes:                   0
     version:                       0
-    WWW::Mechanize:                0
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.2.html
     version: 1.2

@@ -1,5 +1,5 @@
-# $Date: 2007-06-03 14:04:10 -0700 (Sun, 03 Jun 2007) $
-# $Revision: 85 $
+# $Date: 2007-06-03 21:39:50 -0700 (Sun, 03 Jun 2007) $
+# $Revision: 92 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.1');
+use version; our $VERSION = qv('0.3.2');
 
 sub base { return shift->{'base'}; }
 
@@ -35,7 +35,7 @@ WWW::Facebook::API::FQL - Message methods for Client
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::FQL version 0.3.1
+This document describes WWW::Facebook::API::FQL version 0.3.2
 
 =head1 SYNOPSIS
 
