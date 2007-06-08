@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-03 21:39:50 -0700 (Sun, 03 Jun 2007) $
-# $Revision: 92 $
+# $Date: 2007-06-07 22:28:00 -0700 (Thu, 07 Jun 2007) $
+# $Revision: 101 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.2');
+use version; our $VERSION = qv('0.3.3');
 
 sub base { return shift->{'base'}; }
 
@@ -18,8 +18,8 @@ sub new {
     my $class = ref $self || $self;
     $self = bless \%args, $class;
 
-    delete $self->{$_} for grep !/base/, keys %$self;
-    $self->$_ for keys %$self;
+    delete $self->{$_} for grep { !/base/xms } keys %{$self};
+    $self->$_ for keys %{$self};
 
     return $self;
 }
@@ -27,8 +27,8 @@ sub new {
 sub get_fb_params {
     my ( $self, $q ) = @_;
     return {
-        map { (/^fb_sig_(.*)/)[0] => $q->param($_) }
-            sort grep {/^fb_sig_/} $q->param
+        map { (/^fb_sig_ (.*) $/xms)[0] => $q->param($_) }
+            sort grep {/^fb_sig_/xms} $q->param
     };
 }
 
@@ -36,8 +36,10 @@ sub validate_sig {
     my ( $self, $q ) = @_;
     my $fb_params = $self->get_fb_params($q);
     return $fb_params
-        if $self->base->verify_sig( params => $fb_params,
-          sig => $q->param('fb_sig') );
+        if $self->base->verify_sig(
+        params => $fb_params,
+        sig    => $q->param('fb_sig')
+        );
     return;
 }
 
@@ -46,7 +48,7 @@ sub get_user {
     my $fb_params = $self->validate_sig($q);
 
     return $fb_params->{'user'} if $fb_params;
-    return "";
+    return q{};
 }
 
 sub in_fb_canvas {
@@ -66,11 +68,11 @@ __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Canvas - Facebook canvas related methods
+WWW::Facebook::API::Canvas - Facebook Canvas
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Canvas version 0.3.2
+This document describes WWW::Facebook::API::Canvas version 0.3.3
 
 =head1 SYNOPSIS
 
@@ -80,53 +82,70 @@ This document describes WWW::Facebook::API::Canvas version 0.3.2
 
 Methods for using the canvas with L<WWW::Facebook::API>
 
-The C<$q> parameter should implement the param method (for example
-a L<CGI> or L<Apache::Request> object).
+The C<$q> parameter should implement the param method (for example a L<CGI> or
+L<Apache::Request> object).
 
 =head1 SUBROUTINES/METHODS 
 
 =over
 
-=item new
+=item new()
 
 Returns a new instance of this class.
 
-=item base
+=back
 
-The L<WWW::Facebook::API::Base> object to use to make calls to
-the REST server.
+=head1 METHODS
 
-=item get_user($q)
+=over
 
-Return the UID of the canvas user or "" if it does not exist.
+=item base()
 
-=item get_fb_params($q)
+The L<WWW::Facebook::API> object to use to make calls to the REST server.
 
-Return a hash reference to the signed parameters sent via Facebook.
+=item get_user( $q )
 
-=item validate_sig($q)
+Return the UID of the canvas user or "" if it does not exist (See
+L<DESCRIPTION>):
 
-Return true if the signature on the $q object is valid for this application.
+    $response = $client->canvas->get_user( $q )
 
-=item in_fb_canvas($q)
+=item get_fb_params( $q )
 
-Return true if inside a canvas.
+Return a hash reference to the signed parameters sent via Facebook (See
+L<DESCRIPTION>):
 
-=item in_frame($q)
+    $response = $client->canvas->get_fb_params( $q )
 
-Return true if inside a frame or canvas.
+=item in_fb_canvas( $q )
+
+Return true if inside a canvas (See L<DESCRIPTION>):
+
+    $response = $client->canvas->in_fb_canvas( $q )
+
+=item in_frame( $q )
+
+Return true if inside a frame or canvas (See L<DESCRIPTION>):
+
+    $response = $client->canvas->in_fb_canvas( $q )
+
+=item validate_sig( $q )
+
+Return true if the signature on the $q object is valid for this application
+(See L<DESCRIPTION>):
+
+    $response = $client->canvas->validate_sig( $q )
 
 =back
 
 =head1 DIAGNOSTICS
 
-This module is used by L<WWW::Facebook::API> and right now does
-not have any unique error messages.
+None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Canvas requires no configuration files or
-environment variables.
+WWW::Facebook::API::Canvas requires no configuration files or environment
+variables.
 
 =head1 DEPENDENCIES
 
@@ -146,12 +165,14 @@ L<http://rt.cpan.org>.
 
 =head1 AUTHOR
 
+David Leadbeater  C<< http://dgl.cx >>
 David Romano  C<< <unobe@cpan.org> >>
 
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2007, David Romano C<< <unobe@cpan.org> >>. All rights reserved.
+Copyright (c) 2007, David Leadbeater C<< http://dgl.cx >>.
+David Romano C<< <unobe@cpan.org> >>. All rights reserved. 
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.

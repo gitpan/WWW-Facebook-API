@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-03 21:39:50 -0700 (Sun, 03 Jun 2007) $
-# $Revision: 92 $
+# $Date: 2007-06-07 22:28:00 -0700 (Thu, 07 Jun 2007) $
+# $Revision: 101 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.2');
+use version; our $VERSION = qv('0.3.3');
 
 sub base { return shift->{'base'}; }
 
@@ -19,26 +19,29 @@ sub new {
     my $class = ref $self || $self;
     $self = bless \%args, $class;
 
-    delete $self->{$_} for grep !/base/, keys %$self;
-    for ( keys %$self ) { $self->$_ }
+    delete $self->{$_} for grep { !/base/xms } keys %{$self};
+    for ( keys %{$self} ) { $self->$_ }
 
     return $self;
 }
 
-sub get_info           { shift->base->call( 'users.getInfo',         @_ ); }
-sub get_logged_in_user { shift->base->call( 'users.getLoggedInUser', @_ ); }
-sub is_app_added       { shift->base->call( 'users.isAppAdded',      @_ ); }
+sub get_info { return shift->base->call( 'users.getInfo', @_ ); }
+
+sub get_logged_in_user {
+    return shift->base->call( 'users.getLoggedInUser', @_ );
+}
+sub is_app_added { return shift->base->call( 'users.isAppAdded', @_ ); }
 
 1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Users - Users methods for Client
+WWW::Facebook::API::Users - Facebook Users
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Users version 0.3.2
+This document describes WWW::Facebook::API::Users version 0.3.3
 
 =head1 SYNOPSIS
 
@@ -52,40 +55,50 @@ Methods for accessing users with L<WWW::Facebook::API>
 
 =over
 
-=item new
+=item new()
 
 Returns a new instance of this class.
 
-=item base
+=item base()
 
-The L<WWW::Facebook::API::Base> object to use to make calls to
-the REST server.
+The L<WWW::Facebook::API> object to use to make calls to the REST server.
 
-=item get_info
+=item get_info( uids => $uids, fields => $fields )
 
-The users.getInfo method of the Facebook API.
+The users.getInfo method of the Facebook API:
+
+    $response = $client->users->get_info(
+        uids => [ 2343, 3435 ],
+        fields => 'about_me'
+    );
+    $response = $client->users->get_info(
+        uids => 2343,
+        fields => [ qw/about_me quotes/ ]
+    );
 
 =item get_logged_in_user
 
-The users.getLoggedInUser method of the Facebook API.
+The users.getLoggedInUser method of the Facebook API:
+
+    $uid = $client->users->get_logged_in_user;
 
 =item is_app_added
 
-The users.getIsAppAdded method of the Facebook API. (Currently not documented,
-but is present in the PHP client.) Example:
+The users.getIsAppAdded method of the Facebook API (currently not documented,
+but is present in the PHP client):
+
     $user_has_app = $client->users->is_app_added;
 
 =back
 
 =head1 DIAGNOSTICS
 
-This module is used by L<WWW::Facebook::API> and right now does
-not have any unique error messages.
+None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Users requires no configuration files or
-environment variables.
+WWW::Facebook::API::Users requires no configuration files or environment
+variables.
 
 =head1 DEPENDENCIES
 

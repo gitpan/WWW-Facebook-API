@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.2');
+use version; our $VERSION = qv('0.3.3');
 
 sub base { return shift->{'base'}; }
 
@@ -19,18 +19,18 @@ sub new {
     my $class = ref $self || $self;
     $self = bless \%args, $class;
 
-    delete $self->{$_} for grep !/base/, keys %$self;
-    $self->$_ for keys %$self;
+    delete $self->{$_} for grep { !/base/xms } keys %{$self};
+    $self->$_ for keys %{$self};
 
     return $self;
 }
 
 sub publish_story_to_user {
-    shift->base->call( 'feed.publishStoryToUser', @_ );
+    return shift->base->call( 'feed.publishStoryToUser', @_ );
 }
 
 sub publish_action_of_user {
-    shift->base->call( 'feed.publishActionOfUser', @_ );
+    return shift->base->call( 'feed.publishActionOfUser', @_ );
 }
 
 1;    # Magic true value required at end of module
@@ -38,11 +38,11 @@ __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Feed - Feed methods for Client
+WWW::Facebook::API::Feed - Facebook Feeds
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Feed version 0.3.2
+This document describes WWW::Facebook::API::Feed version 0.3.3
 
 =head1 SYNOPSIS
 
@@ -50,28 +50,63 @@ This document describes WWW::Facebook::API::Feed version 0.3.2
 
 =head1 DESCRIPTION
 
-Methods for accessing photos with L<WWW::Facebook::API>
+Methods for accessing feeds with L<WWW::Facebook::API>
 
 =head1 SUBROUTINES/METHODS 
 
 =over
 
-=item new
+=item new()
 
 Returns a new instance of this class.
 
-=item base
+=back
 
-The L<WWW::Facebook::API::Base> object to use to make calls to
-the REST server.
+=head1 METHODS
 
-=item publish_story_to_user
+=over
 
-The feed.publishStoryToUser method of the Facebook API.
+=item base()
 
-=item publish_action_of_user
+The L<WWW::Facebook::API> object to use to make calls to the REST server.
 
-The feed.publishActionOfUser method of the Facebook API.
+=item publish_story_to_user( %params )
+
+The feed.publishStoryToUser method of the Facebook API. C<title> is the only
+parameter required.
+
+    $client->feed->publish_action_of_user(
+        title           => 'title',
+        body            => 'markup',
+        priority        => int rand(100),
+        image_1         => 'image url',
+        image_1_link    => 'destination url',
+        image_2         => 'image url',
+        image_2_link    => 'destination url',
+        image_3         => 'image url',
+        image_3_link    => 'destination url',
+        image_4         => 'image url',
+        image_4_link    => 'destination url',
+    );
+
+=item publish_action_of_user( %params )
+
+The feed.publishActionOfUser method of the Facebook API. C<title> is the only
+parameter required.
+
+    $client->feed->publish_action_of_user(
+        title           => 'title',
+        body            => 'markup',
+        priority        => int rand(100),
+        image_1         => 'image url',
+        image_1_link    => 'destination url',
+        image_2         => 'image url',
+        image_2_link    => 'destination url',
+        image_3         => 'image url',
+        image_3_link    => 'destination url',
+        image_4         => 'image url',
+        image_4_link    => 'destination url',
+    );
 
 =back
 
@@ -81,8 +116,8 @@ None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Feed requires no configuration files or
-environment variables.
+WWW::Facebook::API::Feed requires no configuration files or environment
+variables.
 
 =head1 DEPENDENCIES
 

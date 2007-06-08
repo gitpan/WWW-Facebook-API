@@ -4,7 +4,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.2');
+use version; our $VERSION = qv('0.3.3');
 
 sub base { return shift->{'base'}; }
 
@@ -13,26 +13,26 @@ sub new {
     my $class = ref $self || $self;
     $self = bless \%args, $class;
 
-    delete $self->{$_} for grep !/base/, keys %$self;
-    $self->$_ for keys %$self;
+    delete $self->{$_} for grep { !/base/xms } keys %{$self};
+    $self->$_ for keys %{$self};
 
     return $self;
 }
 
-sub refresh_img_src { shift->base->call( 'fbml.refreshImgSrc', @_ ) }
-sub refresh_ref_url { shift->base->call( 'fbml.refreshRefUrl', @_ ) }
-sub set_ref_handle  { shift->base->call( 'fbml.setRefHandle',  @_ ) }
+sub refresh_img_src { return shift->base->call( 'fbml.refreshImgSrc', @_ ) }
+sub refresh_ref_url { return shift->base->call( 'fbml.refreshRefUrl', @_ ) }
+sub set_ref_handle  { return shift->base->call( 'fbml.setRefHandle',  @_ ) }
 
 1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
 
-WWW::Facebook::API::FBML - FBML methods for Client
+WWW::Facebook::API::FBML - Facebook Markup Language
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::FBML version 0.3.2
+This document describes WWW::Facebook::API::FBML version 0.3.3
 
 =head1 SYNOPSIS
 
@@ -46,24 +46,30 @@ Methods for updating FBML references with L<WWW::Facebook::API>
 
 =over
 
-=item new
+=item new()
 
 Returns a new instance of this class.
 
-=item base
+=back
 
-The L<WWW::Facebook::API::Base> object to use to make calls to
-the REST server.
+=head1 METHODS
 
-=item set_ref_handle
+=over
 
-The fbml.setRefHandle method of the Facebook API.
+=item base()
 
-=item refresh_img_src
+The L<WWW::Facebook::API> object to use to make calls to the REST server.
+
+=item set_ref_handle( handle => 'handleName', fbml => 'fbml' )
+
+The fbml.setRefHandle method of the Facebook API. See this page on the wiki:
+http://wiki.f8.facebook.com/index.php/Fb:ref
+
+=item refresh_img_src( url => $url )
 
 The fbml.refreshImgSrc method of the Facebook API.
 
-=item refresh_ref_url
+=item refresh_ref_url( url => $url )
 
 The fbml.refreshRefUrl method of the Facebook API.
 
@@ -76,9 +82,8 @@ None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::FBML requires no configuration files or
-environment variables.
-
+WWW::Facebook::API::FBML requires no configuration files or environment
+variables.
 
 =head1 DEPENDENCIES
 

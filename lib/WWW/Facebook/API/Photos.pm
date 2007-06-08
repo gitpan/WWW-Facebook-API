@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-03 21:39:50 -0700 (Sun, 03 Jun 2007) $
-# $Revision: 92 $
+# $Date: 2007-06-07 22:28:00 -0700 (Thu, 07 Jun 2007) $
+# $Revision: 101 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.2');
+use version; our $VERSION = qv('0.3.3');
 
 sub base { return shift->{'base'}; }
 
@@ -19,29 +19,29 @@ sub new {
     my $class = ref $self || $self;
     $self = bless \%args, $class;
 
-    delete $self->{$_} for grep !/base/, keys %$self;
-    $self->$_ for keys %$self;
+    delete $self->{$_} for grep { !/base/xms } keys %{$self};
+    $self->$_ for keys %{$self};
 
     return $self;
 }
 
-sub add_tag      { shift->base->call( 'photos.addTag',      @_ ) }
-sub create_album { shift->base->call( 'photos.createAlbum', @_ ) }
-sub get          { shift->base->call( 'photos.get',         @_ ) }
-sub get_albums   { shift->base->call( 'photos.getAlbums',   @_ ) }
-sub get_tags     { shift->base->call( 'photos.getTags',     @_ ) }
-sub upload       { shift->base->call( 'photos.upload',      @_ ) }
+sub add_tag      { return shift->base->call( 'photos.addTag',      @_ ) }
+sub create_album { return shift->base->call( 'photos.createAlbum', @_ ) }
+sub get          { return shift->base->call( 'photos.get',         @_ ) }
+sub get_albums   { return shift->base->call( 'photos.getAlbums',   @_ ) }
+sub get_tags     { return shift->base->call( 'photos.getTags',     @_ ) }
+sub upload       { return shift->base->call( 'photos.upload',      @_ ) }
 
 1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Photos - Photos methods for Client
+WWW::Facebook::API::Photos - Facebook Photos
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Photos version 0.3.2
+This document describes WWW::Facebook::API::Photos version 0.3.3
 
 =head1 SYNOPSIS
 
@@ -55,38 +55,69 @@ Methods for accessing photos with L<WWW::Facebook::API>
 
 =over
 
-=item new
+=item new()
 
 Returns a new instance of this class.
 
-=item base
+=item base()
 
-The L<WWW::Facebook::API::Base> object to use to make calls to
-the REST server.
+The L<WWW::Facebook::API> object to use to make calls to the REST server.
 
-=item add_tag
+=item add_tag( %params )
 
-The photos.addTag method of the Facebook API.
+The photos.addTag method of the Facebook API:
 
-=item create_album
+    $response = $client->photos->add_tag(
+            pid => 2,
+            tag_uid => 3,
+            tag_text => "me",
+            x => 5,
+            y => 6,
+        );
 
-The photos.createAlbum method of the Facebook API.
+or
 
-=item get
+   $response = $client->photos->add_tag( tags => $json_serialized );
 
-The photos.get method of the Facebook API.
+C<tag_text> is ignored if C<tag_uid> is set.
 
-=item get_albums
+=item create_album( name => $name, location => $loc, description => $descr )
 
-The photos.getAlbums method of the Facebook API.
+The photos.createAlbum method of the Facebook API:
 
-=item get_tags
+    $response = $client->photos->create_album(
+            name => 'fun in the sun',
+            location => 'California',
+            description => "Summer '07",
+    );
 
-The photos.getTags method of the Facebook API.
+=item get( aid => $album_id, pids => [ @photo_ids ] )
 
-=item upload
+The photos.get method of the Facebook API:
 
-The photos.upload method of the Facebook API.
+    $response = $client->photos->get( aid => 2, pids => [4,7,8] );
+
+=item get_albums( uid => $uid, pids => [ @photo_ids ] )
+
+The photos.getAlbums method of the Facebook API:
+
+    $response = $client->photos->get_albums( uid => 1, pids => [3,5] );
+
+=item get_tags( pids => [ @photo_ids ] )
+
+The photos.getTags method of the Facebook API:
+
+    $response = $client->photos->get_tags( pids => [4,5] );
+
+=item upload( aid => $album_id, caption => $caption, data => $data )
+
+The photos.upload method of the Facebook API:
+
+    $response = $client->photos->upload(
+        aid => 5,
+        caption => 'beach',
+        data => 'raw data',
+    );
 
 =back
 
@@ -96,8 +127,8 @@ None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Photos requires no configuration files or
-environment variables.
+WWW::Facebook::API::Photos requires no configuration files or environment
+variables.
 
 =head1 DEPENDENCIES
 

@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-03 21:39:50 -0700 (Sun, 03 Jun 2007) $
-# $Revision: 92 $
+# $Date: 2007-06-07 22:28:00 -0700 (Thu, 07 Jun 2007) $
+# $Revision: 101 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.2');
+use version; our $VERSION = qv('0.3.3');
 
 sub base { return shift->{'base'}; }
 
@@ -19,8 +19,8 @@ sub new {
     my $class = ref $self || $self;
     $self = bless \%args, $class;
 
-    delete $self->{$_} for grep !/base/, keys %$self;
-    $self->$_ for keys %$self;
+    delete $self->{$_} for grep { !/base/xms } keys %{$self};
+    $self->$_ for keys %{$self};
 
     return $self;
 }
@@ -34,7 +34,7 @@ sub create_token {
     $self->base->parse(0);
 
     $token = $self->base->call( 'auth.createToken', @_ );
-    $token =~ s/\W//g;
+    $token =~ s/\W//xmsg;
 
     $self->base->format($format);
     $self->base->parse($parse);
@@ -47,8 +47,9 @@ sub get_session {
 
     my $token = shift;
     if ( $self->base->desktop ) {
-        croak "Token needed for call to get_session" if not defined $token;
-        ( my $uri_https = $self->base->server_uri ) =~ s{http://}{https://}mx;
+        croak q{Token needed for call to get_session} if not defined $token;
+        ( my $uri_https = $self->base->server_uri )
+            =~ s{http://}{https://}xms;
         $self->base->server_uri($uri_https);
     }
     $token ||= $self->base->secret;
@@ -72,14 +73,14 @@ sub get_session {
 
     if ( $self->base->desktop ) {
         $field{'secret'} = 'secret';
-        ( my $uri_http = $self->base->server_uri ) =~ s{https://}{http://}mx;
+        ( my $uri_http = $self->base->server_uri ) =~ s{https://}{http://}xms;
         $self->base->server_uri($uri_http);
     }
 
     while ( my ( $key, $val ) = each %field ) {
-        $response =~ /$key"\W+([\w-]+)/;
+        $response =~ /$key"\W+([\w-]+)/xms;
         carp "Setting $key to $1" if $self->base->debug;
-        $self->base->$val($1);
+        $self->base->$val($1);    ## no critic
     }
 
     return;
@@ -88,15 +89,16 @@ sub get_session {
 sub login {
     my ( $self, %args ) = @_;
 
-    croak "Cannot use login method with web app" unless $self->base->desktop;
+    croak q{Cannot use login method with web app} unless $self->base->desktop;
 
     my $token = $self->create_token;
     my $url = $self->base->get_login_url( auth_token => $token );
     my $browser =
-          $args{'browser'} ? $args{'browser'}
-        : $^O =~ /darwin/ ? 'open'
-        : $^O =~ /MSWin/  ? 'start'
-        :                   '';
+          $args{'browser'}
+        ? $args{'browser'}
+        : $^O =~ m/darwin/xms ? 'open'     ## no critic
+        : $^O =~ m/MSWin/xms  ? 'start'    ## no critic
+        :                       q{};
 
     croak "Don't know how to open browser for the system $^O" if not $browser;
 
@@ -106,8 +108,6 @@ sub login {
     # Give the user time to log in
     $args{'sleep'} ||= 15;
     sleep $args{'sleep'};
-
-    print STDERR "Return $token token\n";
 
     return $token;
 }
@@ -124,11 +124,11 @@ __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Auth - Authentication utilities for Client
+WWW::Facebook::API::Auth - Facebook Authentication
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Auth version 0.3.2
+This document describes WWW::Facebook::API::Auth version 0.3.3
 
 =head1 SYNOPSIS
 
@@ -138,7 +138,7 @@ This document describes WWW::Facebook::API::Auth version 0.3.2
 
 Methods for accessing auth with L<WWW::Facebook::API>
 
-=head1 METHODS 
+=head1 SUBROUTINES/METHODS 
 
 =over
 
@@ -146,23 +146,36 @@ Methods for accessing auth with L<WWW::Facebook::API>
 
 Returns a new instance of this class.
 
+=back
+
+=head1 METHODS
+
+=over
+
 =item base()
 
-The L<WWW::Facebook::API> object that the current object is attached to. (Used
-to access settings.)
+The L<WWW::Facebook::API> object to use to make calls to the REST server.
 
 =item create_token()
 
 auth.createToken of the Facebook API. Will always return the token string,
-regardles of the C<parse> setting in L<WWW::Facebook::API>.
+regardles of the C<parse> setting in L<WWW::Facebook::API>:
+
+    $token = $client->auth->create_token;
 
 =item get_session( $auth_token )
 
-auth.getSession of the Facebook API. If you have a desktop app,
-C<create_token> will be called if C<$auth_token> isn't passed in. If you have
-a web app, the C<secret> in L<WWW::Facebook::API> will be used if
-C<$auth_token> isn't passed in. Either way, it automatically sets
-C<session_uid> C<session_key> and C<session_expires>. Nothing is returned.
+auth.getSession of the Facebook API. If you have the desktop attribute set to
+true and C<$token> isn't passed in, the return value from
+C<$client->auth->create_token> will be used. If the desktop attribute is set
+to false and C<$token> isn't passed in, the return value from
+C<$client->secret> will be used (making the these calls exactly the same):
+
+    $client->auth->get_session( $client->secret );
+    $client->auth->get_session;
+
+C<get_session> automatically sets C<session_uid>, C<session_key>, and
+C<session_expires>, and returns nothing.
 
 =item login( sleep => $sleep , browser => $browser_cmd )
 
@@ -209,8 +222,8 @@ the Facebook TOS A.9.iv.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Auth requires no configuration files or
-environment variables.
+WWW::Facebook::API::Auth requires no configuration files or environment
+variables.
 
 =head1 DEPENDENCIES
 

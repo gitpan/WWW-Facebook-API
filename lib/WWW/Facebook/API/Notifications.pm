@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-03 21:39:50 -0700 (Sun, 03 Jun 2007) $
-# $Revision: 92 $
+# $Date: 2007-06-07 22:28:00 -0700 (Thu, 07 Jun 2007) $
+# $Revision: 101 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.2');
+use version; our $VERSION = qv('0.3.3');
 
 sub base { return shift->{'base'}; }
 
@@ -19,17 +19,17 @@ sub new {
     my $class = ref $self || $self;
     $self = bless \%args, $class;
 
-    delete $self->{$_} for grep !/base/, keys %$self;
-    $self->$_ for keys %$self;
+    delete $self->{$_} for grep { !/base/xms } keys %{$self};
+    $self->$_ for keys %{$self};
 
     return $self;
 }
 
-sub get  { shift->base->call( 'notifications.get',  @_ ) }
-sub send { shift->base->call( 'notifications.send', @_ ) }
+sub get  { return shift->base->call( 'notifications.get',  @_ ) }
+sub send { return shift->base->call( 'notifications.send', @_ ) } ## no critic
 
 sub send_request {
-    shift->base->call( 'notifications.sendRequest', @_ );
+    return shift->base->call( 'notifications.sendRequest', @_ );
 }
 
 1;    # Magic true value required at end of module
@@ -37,11 +37,11 @@ __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Notifications - Notifications methods for Client
+WWW::Facebook::API::Notifications - Facebook Notifications
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Notifications version 0.3.2
+This document describes WWW::Facebook::API::Notifications version 0.3.3
 
 =head1 SYNOPSIS
 
@@ -55,33 +55,47 @@ Methods for accessing notification information with L<WWW::Facebook::API>
 
 =over
 
-=item new
+=item new()
 
 Returns a new instance of this class.
 
-=item base
+=item base()
 
-The L<WWW::Facebook::API::Base> object to use to make calls to
-the REST server.
+The L<WWW::Facebook::API> object to use to make calls to the REST server.
 
-=item get
+=item get()
 
-The notifications.get method of the Facebook API.
+The notifications.get method of the Facebook API:
 
-=item send
+    $response = $client->notifications->get;
 
-The notifications.send method of the Facebook API.
+=item send( to_ids => [ @uids ], markup => $fbml_markup, no_email => 0|1 )
 
-=item send_request
+The notifications.send method of the Facebook API:
 
-The notifications.sendRequest method of the Facebook API.
+    $response = $client->notifications->send(
+        to_ids => [1],
+        markup => 'markup',
+        no_email => 1,
+    );
+
+=item send_request( %params )
+
+The notifications.sendRequest method of the Facebook API:
+
+    $response = $client->notifications->send_request(
+        to_ids => [1],
+        type => 'event',
+        content => 'markup',
+        image   => 'image url',
+        invite  => 0|1,
+    );
 
 =back
 
 =head1 DIAGNOSTICS
 
-This module is used by L<WWW::Facebook::API> and right now does
-not have any unique error messages.
+None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 

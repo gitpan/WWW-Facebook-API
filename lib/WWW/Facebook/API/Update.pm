@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-03 21:39:50 -0700 (Sun, 03 Jun 2007) $
-# $Revision: 92 $
+# $Date: 2007-06-07 22:28:00 -0700 (Thu, 07 Jun 2007) $
+# $Revision: 101 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.2');
+use version; our $VERSION = qv('0.3.3');
 
 sub base { return shift->{'base'}; }
 
@@ -19,24 +19,24 @@ sub new {
     my $class = ref $self || $self;
     $self = bless \%args, $class;
 
-    delete $self->{$_} for grep !/base/, keys %$self;
-    $self->$_ for keys %$self;
+    delete $self->{$_} for grep { !/base/xms } keys %{$self};
+    $self->$_ for keys %{$self};
 
     return $self;
 }
 
-sub decode_ids { $_[0]->base->call( 'update.decodeIDs', @_ ) }
+sub decode_ids { return shift->base->call( 'update.decodeIDs', @_ ) }
 
 1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Update - Update methods for Client
+WWW::Facebook::API::Update - Facebok Update
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Update version 0.3.2
+This document describes WWW::Facebook::API::Update version 0.3.3
 
 =head1 SYNOPSIS
 
@@ -50,30 +50,30 @@ Methods for updating old API info to newer API with L<WWW::Facebook::API>
 
 =over
 
-=item new
+=item new()
 
 Returns a new instance of this class.
 
-=item base
+=item base()
 
-The L<WWW::Facebook::API::Base> object to use to make calls to
-the REST server.
+The L<WWW::Facebook::API> object to use to make calls to the REST server.
 
-=item decode_ids
+=item decode_ids( ids => [ ... ] )
 
-The update.decodeIDs method of the Facebook API.
+The update.decodeIDs method of the Facebook API:
+
+    $r = $client->users->decode_ids( ids => [ 'iF3JWONAvmXY.', 'e_3STAg.' ] );
 
 =back
 
 =head1 DIAGNOSTICS
 
-This module is used by L<WWW::Facebook::API> and right now does
-not have any unique error messages.
+None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Update requires no configuration files or
-environment variables.
+WWW::Facebook::API::Update requires no configuration files or environment
+variables.
 
 =head1 DEPENDENCIES
 
