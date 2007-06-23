@@ -1,5 +1,20 @@
 Revision history for WWW-Facebook-API
 
+0.3.4  Fri Jun 22 19:16:34 PDT 2007
+	Cleaned up attribute creators and namespace method creators (Thanks
+	  Matt Sickler)
+	Added debug message in _parse
+	Require auth_token for get_session() calls (was being set to secret
+	  if no token was passed in for web apps, and that was wrong)
+	Edited docs to clarify what needs to be done for web apps to call
+	  auth->get_session(). (Thanks Olaf Alders)
+	XML is no longer parsed when the parse flag is true. (Thanks Olaf
+	  Alders)
+	Added CONTRIBUTORS section for those who've contributed ideas and code
+	canvas->in_frame now checks for 'in_iframe' rather than erroneous
+	  'in_frame'. Fixed doc example call, too. (Thanks Simon Cavalletto)
+	JSON loading patch (Thanks J. Shirley)
+
 0.3.3  Thu Jun  7 22:26:17 PDT 2007
 	Ran through Perl::Critic and added tests (not included in MANIFEST)
 	Added method call_success in API.pm to simplify error tracking

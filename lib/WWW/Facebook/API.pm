@@ -1,6 +1,6 @@
-#######################################################################
-# $Date: 2007-06-07 22:28:00 -0700 (Thu, 07 Jun 2007) $
-# $Revision: 101 $
+#########################################################################
+# $Date: 2007-06-22 19:17:36 -0700 (Fri, 22 Jun 2007) $
+# $Revision: 116 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.3');
+use version; our $VERSION = qv('0.3.4');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -25,9 +25,9 @@ our @namespaces = qw(
     Users
 );
 
-my $create_subclass_code = sub {    ## no critic
-    local $_ = shift;
-    my $subclass = shift;
+for (@namespaces) {
+    my $subclass = "\L$_";
+    ## no critic
     eval qq(
         use WWW::Facebook::API::$_;
         sub $subclass {
@@ -36,11 +36,6 @@ my $create_subclass_code = sub {    ## no critic
         }
     );
     croak "Cannot create subclass $subclass: $@\n" if $@;
-};
-
-for (@namespaces) {
-    my $subclass = "\L$_";
-    $create_subclass_code->( $_, $subclass );
 }
 
 our %attributes = (
@@ -63,22 +58,17 @@ our %attributes = (
     ),
 );
 
-my $create_attribute_code = sub {    ## no critic
-    my $attribute = shift;
-    my $default   = shift;
-    eval qq(
-        sub $attribute {
+for ( keys %attributes ) {
+    ## no critic
+    eval qq( 
+        sub $_ {
             my \$self = shift;
-            return \$self->{$attribute} = shift if \@_;
-            return \$self->{$attribute} if defined \$self->{$attribute};
-            return \$self->{$attribute} = '$default';
+            return \$self->{$_} = shift if \@_;
+            return \$self->{$_} if defined \$self->{$_};
+            return \$self->{$_} = '$attributes{$_}';
         }
     );
-    croak "Cannot create attribute $attribute: $@\n" if $@;
-};
-
-for ( keys %attributes ) {
-    $create_attribute_code->( $_, $attributes{$_} );
+    croak "Cannot create attribute $_: $@\n" if $@;
 }
 
 sub new {
@@ -91,7 +81,10 @@ sub new {
     my $is_attribute = join q{|}, keys %attributes;
     delete $self->{$_} for grep { !/^($is_attribute)$/xms } keys %{$self};
 
+    # set up default subclassers
     $self->$_($self) for map {"\L$_"} @namespaces;
+
+    # set up default attributes
     $self->$_ for keys %attributes;
 
     return $self;
@@ -131,8 +124,10 @@ sub call {
     $params->{'sig'}    = $sig;
     $params->{'secret'} = $secret;
     carp $self->log_string( $params, $response ) if $self->debug;
-    if ( $response =~ m/ <error_code> (\d+) .* <error_msg> ([^<]+)
-        |   \{ "error_code" \D (\d+) .* "error_msg"[^"]+ "([^"]+)" /xms ) {
+    if ($response =~ m/ <error_code> (\d+) .* <error_msg> ([^<]+)
+        |   \{ "error_code" \D (\d+) .* "error_msg"[^"]+ "([^"]+)" /xms
+        )
+    {
         $self->call_success( 0, "$1: $2" );
 
         confess "Error during REST $method call:",
@@ -146,32 +141,28 @@ sub call {
 
     undef $params;
 
-    return $response unless $self->parse;
+    return $response unless $self->parse and $self->format eq 'JSON';
 
     return $self->_parse($response);
 }
 
 sub generate_sig {
-    my $self   = shift;
-    my (%args) = @_;
+    my ( $self, %args ) = @_;
     my %params = %{ $args{'params'} };
-
     return md5_hex( ( map {"$_=$params{$_}"} sort keys %params ),
         $args{'secret'} );
 }
 
 sub verify_sig {
-    my $self = shift;
-    my (%args) = @_;
+    my ( $self, %args ) = @_;
     return $args{'sig'} eq $self->generate_sig(
         params => $args{'params'},
-        secret => $self->secret
+        secret => $args{'secret'} || $self->secret,
     );
 }
 
 sub session {
-    my $self = shift;
-    my %args = @_;
+    my ( $self, %args ) = @_;
     $self->{"session_$_"} = $args{$_} for keys %args;
     return;
 }
@@ -220,7 +211,6 @@ sub _add_url_params {
         $params .= "&$_=$params{$_}";
     }
     return $params;
-
 }
 
 sub get_app_url {
@@ -232,10 +222,24 @@ sub get_app_url {
 sub _parse {
     my ( $self, $response ) = @_;
 
-    ## no critic
-    eval q{use JSON::Any};
-    croak "Unable to load JSON module for parsing:$@\n" if $@;
-    return JSON::Any->new->decode($response);
+    my $parser;
+    eval { $parser = JSON::Any->new; };
+
+    # Only load JSON::Any if we haven't already.  Lets the developers
+    # pick their choice of JSON modules (JSON::DWIW, for example)
+    if ($@) {    ## no critic
+        ## no critic
+        eval q{use JSON::Any};
+        croak "Unable to load JSON module for parsing:$@\n" if $@;
+        $parser = JSON::Any->new;
+    }
+
+    if ( $self->debug ) {
+        carp 'JSON::Any is using '
+            . JSON::Any->handler
+            . " to parse\n$response\n\n";
+    }
+    return $parser->decode($response);
 }
 
 sub _check_values_of {
@@ -293,7 +297,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.3.3
+This document describes WWW::Facebook::API version 0.3.4
 
 =head1 SYNOPSIS
 
@@ -380,27 +384,25 @@ All method names from the Facebook API are lower_cased instead of CamelCase.
 
 =item auth
 
-For a web app, you only really need to call C<$client->auth->get_session>
-without parameters. See L<WWW::Facebook::API::Auth>. If you have the desktop
-attribute set to true and C<$token> isn't passed in, the return value from
-C<$client->auth->create_token> will be used. If the desktop attribute is set
-to false and C<$token> isn't passed in, the return value from
-C<$client->secret> will be used. So for web apps, these are synonymous:
-
-    $client->auth->get_session( $client->secret );
-    $client->auth->get_session;
-
 For desktop apps, these are synonymous:
 
     $client->auth->get_session( $client->auth->create_token );
     $client->auth->get_session;
 
-C<get_session> automatically sets C<session_uid>, C<session_key>, and
-C<session_expires>, and returns nothing. The other methods are C<login()> and
-C<logout()>:
+And that's all you really have to do (but see L<WWW::Facebook::API::Auth> for
+details about opening a browser on *nix for Desktop apps). C<get_session>
+automatically sets C<session_uid>, C<session_key>, and C<session_expires> for
+C<$client>. It returns nothing.
 
-    $client->auth->login( sleep => $sleep_seconds, browser => $browser_cmd );
-    $client->auth->logout;
+If the desktop attribute is set to false the C<$token> must be the auth_token
+returned from Facebook to your web app for that user:
+
+    if ( $q->param('auth_token')  ) {
+        $client->auth->get_session( $q->param('auth_token') );
+    }
+
+C<get_session> automatically sets C<session_uid>, C<session_key>, and
+C<session_expires> for C<$client>. It returns nothing.
 
 See L<WWW::Facebook::API::Auth> for details.
 
@@ -688,7 +690,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.3.3".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.3.4".
 
 =back
 
@@ -769,7 +771,7 @@ Sets the C<user>, C<session_key>, and C<session_expires> all at once.
 Returns its parameter with all the escape sequences unescaped. If you're using
 a web app, this is done automatically to the response.
 
-=item verify_sig( params => $params_hashref, sig => $expected_sig )
+=item verify_sig( sig => $expected_sig, params => $params_hashref )
 
 Checks the signature for a given set of parameters against an expected value.
 
@@ -869,26 +871,50 @@ Add tests to get better coverage.
 ---------------------------- ------ ------ ------ ------ ------ ------ ------
 File                           stmt   bran   cond    sub    pod   time  total
 ---------------------------- ------ ------ ------ ------ ------ ------ ------
-blib/lib/WWW/Facebook/API.pm   86.7   72.0   34.4   93.2  100.0   85.3   79.8
-.../WWW/Facebook/API/Auth.pm   81.4   22.2   25.0   80.0  100.0    1.4   68.8
-...WW/Facebook/API/Canvas.pm   57.1    0.0   16.7   54.5  100.0    0.7   52.8
-...WW/Facebook/API/Events.pm   92.3    n/a   33.3   75.0  100.0    0.7   85.4
-.../WWW/Facebook/API/FBML.pm   88.9    n/a   33.3   66.7  100.0    0.7   81.8
-...b/WWW/Facebook/API/FQL.pm   96.0    n/a   33.3   85.7  100.0    0.6   89.5
-.../WWW/Facebook/API/Feed.pm   92.3    n/a   33.3   75.0  100.0    0.6   85.4
+blib/lib/WWW/Facebook/API.pm   84.4   69.7   34.3   93.2  100.0   89.5   77.8
+.../WWW/Facebook/API/Auth.pm   81.2   22.2   20.0   80.0  100.0    1.4   69.4
+...WW/Facebook/API/Canvas.pm   57.1    0.0   16.7   54.5  100.0    0.6   52.8
+...WW/Facebook/API/Events.pm   92.3    n/a   33.3   75.0  100.0    0.6   85.4
+.../WWW/Facebook/API/FBML.pm   88.9    n/a   33.3   66.7  100.0    0.8   81.8
+...b/WWW/Facebook/API/FQL.pm   96.0    n/a   33.3   85.7  100.0    0.7   89.5
+.../WWW/Facebook/API/Feed.pm   92.3    n/a   33.3   75.0  100.0    0.9   85.4
 ...W/Facebook/API/Friends.pm   88.9    n/a   33.3   66.7  100.0    0.6   81.8
-...WW/Facebook/API/Groups.pm   92.3    n/a   33.3   75.0  100.0    6.1   85.4
-...book/API/Notifications.pm   88.9    n/a   33.3   66.7  100.0    0.7   81.8
+...WW/Facebook/API/Groups.pm   92.3    n/a   33.3   75.0  100.0    0.7   85.4
+...book/API/Notifications.pm   88.9    n/a   33.3   66.7  100.0    0.9   81.8
 ...WW/Facebook/API/Photos.pm   80.0    n/a   33.3   50.0  100.0    0.6   73.6
-...W/Facebook/API/Profile.pm   85.7    n/a   33.3   60.0  100.0    0.7   78.7
+...W/Facebook/API/Profile.pm   85.7    n/a   33.3   60.0  100.0    1.5   78.7
 ...WW/Facebook/API/Update.pm   96.0    n/a   33.3   85.7  100.0    0.6   89.5
-...WWW/Facebook/API/Users.pm   88.9    n/a   33.3   66.7  100.0    0.7   81.8
-Total                          85.7   62.7   32.4   77.9  100.0  100.0   78.4
+...WWW/Facebook/API/Users.pm   88.9    n/a   33.3   66.7  100.0    0.6   81.8
+Total                          84.7   61.0   32.5   77.9  100.0  100.0   77.5
 ---------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 AUTHOR
 
 David Romano  C<< <unobe@cpan.org> >>
+
+=head1 CONTRIBUTORS
+
+Clayton Scott C<< http://www.matrix.ca >>
+
+David Leadbeater C<< http://dgl.cx >>
+
+J. Shirley C<< <jshirley@gmail.com> >>
+
+Matt Sickler C<< unknown >>
+
+Nick Gerakines C<< <nick@socklabs.com> >>
+
+Olaf Alders C<< <olaf@wundersolutions.com> >>
+
+Patrick Michael Kane C<< <pmk@wawd.com> >>
+
+Sean O'Rourke C<< <seano@cpan.org> >>
+
+Shawn Van Ittersum C<< none >>
+
+Simon Cavalletto C<< <simonm@cavalletto.org> >>
+
+Thomas Sibley C<< <tsibley@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
