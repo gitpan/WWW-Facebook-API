@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-22 19:17:36 -0700 (Fri, 22 Jun 2007) $
-# $Revision: 116 $
+# $Date: 2007-06-28 13:05:21 -0700 (Thu, 28 Jun 2007) $
+# $Revision: 120 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.4');
+use version; our $VERSION = qv('0.3.5');
 
 sub base { return shift->{'base'}; }
 
@@ -25,41 +25,63 @@ sub new {
 }
 
 sub get_fb_params {
-    my ( $self, $q ) = @_;
+    my $self = shift;
+    $self->base->query(shift);
+
     return {
-        map { (/^fb_sig_ (.*) $/xms)[0] => $q->param($_) }
-            sort grep {/^fb_sig_/xms} $q->param
+        map { (/^fb_sig_ (.*) $/xms)[0] => $self->base->query->param($_) }
+            grep {/^fb_sig_/xms} $self->base->query->param
+    };
+}
+
+sub get_non_fb_params {
+    my $self = shift;
+    $self->base->query(shift);
+
+    return {
+        map { $_ => $self->base->query->param($_) }
+            grep { !/^fb_sig_/xms } $self->base->query->param
     };
 }
 
 sub validate_sig {
-    my ( $self, $q ) = @_;
-    my $fb_params = $self->get_fb_params($q);
+    my $self = shift;
+    $self->base->query(shift);
+
+    my $fb_params = $self->get_fb_params;
     return $fb_params
         if $self->base->verify_sig(
         params => $fb_params,
-        sig    => $q->param('fb_sig')
+        sig    => $self->base->query->param('fb_sig')
         );
+
     return;
 }
 
 sub get_user {
-    my ( $self, $q ) = @_;
-    my $fb_params = $self->validate_sig($q);
+    my $self = shift;
+    $self->base->query(shift);
 
+    my $fb_params = $self->validate_sig;
     return $fb_params->{'user'} if $fb_params;
+
     return q{};
 }
 
 sub in_fb_canvas {
-    my ( $self, $q ) = @_;
-    return $self->get_fb_params($q)->{'in_canvas'};
+    my $self = shift;
+    $self->base->query(shift);
+
+    return $self->get_fb_params->{'in_canvas'};
 }
 
 sub in_frame {
-    my ( $self, $q ) = @_;
-    my $fb_params = $self->get_fb_params($q);
+    my $self = shift;
+    $self->base->query(shift);
+
+    my $fb_params = $self->get_fb_params;
     return 1 if $fb_params->{'in_canvas'} or $fb_params->{'in_iframe'};
+
     return;
 }
 
@@ -72,7 +94,7 @@ WWW::Facebook::API::Canvas - Facebook Canvas
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Canvas version 0.3.4
+This document describes WWW::Facebook::API::Canvas version 0.3.5
 
 =head1 SYNOPSIS
 
@@ -110,6 +132,9 @@ L<DESCRIPTION>):
 
     $response = $client->canvas->get_user( $q )
 
+If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+used.
+
 =item get_fb_params( $q )
 
 Return a hash reference to the signed parameters sent via Facebook (See
@@ -117,11 +142,28 @@ L<DESCRIPTION>):
 
     $response = $client->canvas->get_fb_params( $q )
 
+If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+used.
+
+=item get_non_fb_params( $q )
+
+Return a hash reference to the parameters that are not part of the signed
+facebook parameters. This is useful if your app send a POST request to
+Facebook and you want to use the data you POSTed:
+
+    $non_fb_params = $client->canvas->get_non_fb_params( $q )
+
+If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+used.
+
 =item in_fb_canvas( $q )
 
 Return true if inside a canvas (See L<DESCRIPTION>):
 
     $response = $client->canvas->in_fb_canvas( $q )
+
+If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+used.
 
 =item in_frame( $q )
 
@@ -129,12 +171,20 @@ Return true if inside an iframe or canvas (See L<DESCRIPTION>):
 
     $response = $client->canvas->in_frame( $q )
 
+If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+used.
+
 =item validate_sig( $q )
 
-Return true if the signature on the $q object is valid for this application
-(See L<DESCRIPTION>):
+Return a hash reference containing the fb_* params (with C<fb_> stripped) if
+the signature on the $q object is valid for this application (See
+L<DESCRIPTION>):
 
-    $response = $client->canvas->validate_sig( $q )
+    $fb_params = $client->canvas->validate_sig( $q )
+    # $fb_params doesn't contain a sig key
+
+If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+used.
 
 =back
 

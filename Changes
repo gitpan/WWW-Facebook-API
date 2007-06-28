@@ -1,5 +1,16 @@
 Revision history for WWW-Facebook-API
 
+0.3.5  Thu Jun 28 12:38:24 PDT 2007
+	Added canvas->get_non_fb_params() (Thanks Matt Sickler)
+	Clarified Canvas documentation for validate_sig() (Thanks Matt Sickler)
+	Refactored get_*_url methods
+	Worked on require_* methods and added docs
+	Added 'query' attribute to API.pm to store current CGI or
+	  Apache::Request object.
+	Fixed test coverage table formatting in docs
+	Add JSON::XS nonref fix to _parse (returns from notifications->send
+	  haven't been working) (Thanks Matt Sickler and Jim Spath)
+
 0.3.4  Fri Jun 22 19:16:34 PDT 2007
 	Cleaned up attribute creators and namespace method creators (Thanks
 	  Matt Sickler)

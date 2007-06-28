@@ -1,5 +1,5 @@
-# $Date: 2007-06-22 19:17:36 -0700 (Fri, 22 Jun 2007) $
-# $Revision: 116 $
+# $Date: 2007-06-28 13:05:21 -0700 (Thu, 28 Jun 2007) $
+# $Revision: 120 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.4');
+use version; our $VERSION = qv('0.3.5');
 
 sub base { return shift->{'base'}; }
 
@@ -35,7 +35,7 @@ WWW::Facebook::API::FQL - Facebook Query Language
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::FQL version 0.3.4
+This document describes WWW::Facebook::API::FQL version 0.3.5
 
 =head1 SYNOPSIS
 
