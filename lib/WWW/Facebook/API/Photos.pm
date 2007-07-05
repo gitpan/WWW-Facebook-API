@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-06-29 11:10:50 -0700 (Fri, 29 Jun 2007) $
-# $Revision: 124 $
+# $Date: 2007-07-05 07:31:01 -0700 (Thu, 05 Jul 2007) $
+# $Revision: 125 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.6');
+use version; our $VERSION = qv('0.3.7');
 
 sub base { return shift->{'base'}; }
 
@@ -41,7 +41,7 @@ WWW::Facebook::API::Photos - Facebook Photos
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Photos version 0.3.6
+This document describes WWW::Facebook::API::Photos version 0.3.7
 
 =head1 SYNOPSIS
 
