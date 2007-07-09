@@ -1,6 +1,6 @@
 #########################################################################
-# $Date: 2007-07-05 07:31:01 -0700 (Thu, 05 Jul 2007) $
-# $Revision: 125 $
+# $Date: 2007-07-08 18:53:24 -0700 (Sun, 08 Jul 2007) $
+# $Revision: 132 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.8');
+use version; our $VERSION = qv('0.3.9');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -21,8 +21,7 @@ our @namespaces = qw(
     Auth            Canvas          Events
     FBML            Feed            FQL
     Friends         Groups          Notifications
-    Photos          Profile         Update
-    Users
+    Photos          Profile         Users
 );
 
 for (@namespaces) {
@@ -31,6 +30,18 @@ for (@namespaces) {
     ## no critic
     eval qq(
         use $package;
+
+        *${package}::base = sub { return shift->{'base'}; };
+        *${package}::new = sub {
+            my ( \$class, \%args ) = \@_;
+            my \$self = bless \\\%args, \$class;
+
+            delete \$self->{\$_} for grep { !/base/xms } keys %{\$self};
+            \$self->\$_ for keys %{\$self};
+
+            return \$self;
+        };
+
         sub $name {
             my \$self = shift;
             unless ( \$self->{'_$name'} ) {
@@ -375,7 +386,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.3.8
+This document describes WWW::Facebook::API version 0.3.9
 
 =head1 SYNOPSIS
 
@@ -797,7 +808,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.3.8".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.3.9".
 
 =back
 
@@ -1032,29 +1043,28 @@ environment variables are set:
     WFA_SECRET_KEY_TEST
     WFA_SESSION_KEY_TEST
 
-Additionally, if your app is a desktop one, you must set C<WFA_DESKTOP>. Also,
-the session key must be valid for the API key being used.
+Additionally, if your app is a desktop one, you must set C<WFA_DESKTOP_TEST>.
+Also, the session key must be valid for the API key being used.
 
 With live tests enabled, here is the current test coverage:
 
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
-  File                           stmt   bran   cond    sub    pod   time total
+  File                           stmt   bran   cond    sub    pod   time  total
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
-  blib/lib/WWW/Facebook/API.pm   91.6   70.2   67.6   92.7  100.0   91.5 85.6
-  .../WWW/Facebook/API/Auth.pm   81.2   22.2   20.0   80.0  100.0    0.9 69.4
-  ...WW/Facebook/API/Canvas.pm   46.2    0.0   16.7   50.0  100.0    0.6 46.4
-  ...WW/Facebook/API/Events.pm   92.3    n/a   33.3   75.0  100.0    0.6 85.4
-  .../WWW/Facebook/API/FBML.pm   88.9    n/a   33.3   66.7  100.0    0.4 81.8
-  ...b/WWW/Facebook/API/FQL.pm  100.0   75.0   50.0  100.0  100.0    0.5 91.7
-  .../WWW/Facebook/API/Feed.pm   92.3    n/a   33.3   75.0  100.0    0.5 85.4
-  ...W/Facebook/API/Friends.pm   88.9    n/a   33.3   66.7  100.0    0.5 81.8
-  ...WW/Facebook/API/Groups.pm   92.3    n/a   33.3   75.0  100.0    1.6 85.4
-  ...book/API/Notifications.pm   88.9    n/a   33.3   66.7  100.0    0.7 81.8
-  ...WW/Facebook/API/Photos.pm   80.0    n/a   33.3   50.0  100.0    0.4 73.6
-  ...W/Facebook/API/Profile.pm   92.9    n/a   33.3   80.0  100.0    0.7 87.2
-  ...WW/Facebook/API/Update.pm   96.0    n/a   33.3   85.7  100.0    0.6 89.5
-  ...WWW/Facebook/API/Users.pm   92.6    n/a   33.3   77.8  100.0    0.5 86.4
-  Total                          87.5   64.4   47.6   80.0  100.0  100.0 81.6
+  blib/lib/WWW/Facebook/API.pm   93.7   75.8   67.6   92.6  100.0    5.5   88.9
+  .../WWW/Facebook/API/Auth.pm   94.7   66.7  100.0   87.5  100.0   94.1   88.8
+  ...WW/Facebook/API/Canvas.pm   97.6   87.5  100.0  100.0  100.0    0.0   97.1
+  ...WW/Facebook/API/Events.pm  100.0    n/a    n/a  100.0  100.0    0.1  100.0
+  .../WWW/Facebook/API/FBML.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
+  ...b/WWW/Facebook/API/FQL.pm  100.0  100.0  100.0  100.0  100.0    0.0  100.0
+  .../WWW/Facebook/API/Feed.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
+  ...W/Facebook/API/Friends.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
+  ...WW/Facebook/API/Groups.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
+  ...book/API/Notifications.pm   86.7    n/a    n/a   71.4  100.0    0.0   84.0
+  ...WW/Facebook/API/Photos.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
+  ...W/Facebook/API/Profile.pm   87.5    n/a    n/a   75.0  100.0    0.0   85.7
+  ...WWW/Facebook/API/Users.pm   86.7    n/a    n/a   71.4  100.0    0.0   84.0
+  Total                          94.5   75.9   73.3   92.3  100.0  100.0   90.7
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 AUTHOR

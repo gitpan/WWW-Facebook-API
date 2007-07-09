@@ -1,5 +1,5 @@
-# $Date: 2007-07-05 14:48:16 -0700 (Thu, 05 Jul 2007) $
-# $Revision: 128 $
+# $Date: 2007-07-08 18:53:24 -0700 (Sun, 08 Jul 2007) $
+# $Revision: 132 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -9,20 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.8');
-
-sub base { return shift->{'base'}; }
-
-sub new {
-    my ( $self, %args ) = @_;
-    my $class = ref $self || $self;
-    $self = bless \%args, $class;
-
-    delete $self->{$_} for grep { !/base/xms } keys %{$self};
-    $self->$_ for keys %{$self};
-
-    return $self;
-}
+use version; our $VERSION = qv('0.3.9');
 
 # always return an array reference. The value returned by Facebook is a hash
 # reference when the are no results, so this shouldn't be a problem.
@@ -30,7 +17,7 @@ sub query {
     my $self = shift;
     my $response = $self->base->call( 'fql.query', @_ );
 
-    return $response if !$self->base->parse && !$self->base->format eq 'JSON';
+    return $response if !$self->base->parse && $self->base->format ne 'JSON';
     return ref $response eq 'HASH' ? [] : $response;
 }
 
@@ -43,7 +30,7 @@ WWW::Facebook::API::FQL - Facebook Query Language
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::FQL version 0.3.8
+This document describes WWW::Facebook::API::FQL version 0.3.9
 
 =head1 SYNOPSIS
 
@@ -56,20 +43,6 @@ Methods for accessing messages with L<WWW::Facebook::API>
 =head1 SUBROUTINES/METHODS 
 
 =over
-
-=item new()
-
-Returns a new instance of this class.
-
-=back
-
-=head1 METHODS
-
-=over
-
-=item base()
-
-The L<WWW::Facebook::API> object to use to make calls to the REST server.
 
 =item query( query => 'FQL QUERY LANGUAGE' )
 

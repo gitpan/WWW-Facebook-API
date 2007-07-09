@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-07-05 07:31:01 -0700 (Thu, 05 Jul 2007) $
-# $Revision: 125 $
+# $Date: 2007-07-08 18:53:24 -0700 (Sun, 08 Jul 2007) $
+# $Revision: 132 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,20 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.8');
-
-sub base { return shift->{'base'}; }
-
-sub new {
-    my ( $self, %args ) = @_;
-    my $class = ref $self || $self;
-    $self = bless \%args, $class;
-
-    delete $self->{$_} for grep { !/base/xms } keys %{$self};
-    $self->$_ for keys %{$self};
-
-    return $self;
-}
+use version; our $VERSION = qv('0.3.9');
 
 sub create_token {
     my $self = shift;
@@ -127,7 +114,7 @@ WWW::Facebook::API::Auth - Facebook Authentication
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Auth version 0.3.8
+This document describes WWW::Facebook::API::Auth version 0.3.9
 
 =head1 SYNOPSIS
 
@@ -137,23 +124,9 @@ This document describes WWW::Facebook::API::Auth version 0.3.8
 
 Methods for accessing auth with L<WWW::Facebook::API>
 
-=head1 SUBROUTINES/METHODS 
+=head1 SUBROUTINES/METHODS
 
 =over
-
-=item new()
-
-Returns a new instance of this class.
-
-=back
-
-=head1 METHODS
-
-=over
-
-=item base()
-
-The L<WWW::Facebook::API> object to use to make calls to the REST server.
 
 =item create_token()
 

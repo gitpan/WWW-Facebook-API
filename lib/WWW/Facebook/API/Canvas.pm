@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-07-05 07:31:01 -0700 (Thu, 05 Jul 2007) $
-# $Revision: 125 $
+# $Date: 2007-07-08 18:53:24 -0700 (Sun, 08 Jul 2007) $
+# $Revision: 132 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -9,20 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.8');
-
-sub base { return shift->{'base'}; }
-
-sub new {
-    my ( $self, %args ) = @_;
-    my $class = ref $self || $self;
-    $self = bless \%args, $class;
-
-    delete $self->{$_} for grep { !/base/xms } keys %{$self};
-    $self->$_ for keys %{$self};
-
-    return $self;
-}
+use version; our $VERSION = qv('0.3.9');
 
 sub get_fb_params {
     my $self = shift;
@@ -30,7 +17,7 @@ sub get_fb_params {
 
     return {
         map { (/^fb_sig_ (.*) $/xms)[0] => $self->base->query->param($_) }
-            grep {/^fb_sig_/xms} $self->base->query->param
+            grep {m/^fb_sig_/xms} $self->base->query->param
     };
 }
 
@@ -40,7 +27,7 @@ sub get_non_fb_params {
 
     return {
         map { $_ => $self->base->query->param($_) }
-            grep { !/^fb_sig_/xms } $self->base->query->param
+            grep { !/^fb_sig_?/xms } $self->base->query->param
     };
 }
 
@@ -49,10 +36,11 @@ sub validate_sig {
     $self->base->query(shift);
 
     my $fb_params = $self->get_fb_params;
+    return unless $self->base->query->param('fb_sig');
     return $fb_params
         if $self->base->verify_sig(
         params => $fb_params,
-        sig    => $self->base->query->param('fb_sig')
+        sig    => $self->base->query->param('fb_sig'),
         );
 
     return;
@@ -63,7 +51,7 @@ sub get_user {
     $self->base->query(shift);
 
     my $fb_params = $self->validate_sig;
-    return $fb_params->{'user'} if $fb_params;
+    return $fb_params->{'user'} if exists $fb_params->{'user'};
 
     return q{};
 }
@@ -94,7 +82,7 @@ WWW::Facebook::API::Canvas - Facebook Canvas
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Canvas version 0.3.8
+This document describes WWW::Facebook::API::Canvas version 0.3.9
 
 =head1 SYNOPSIS
 
@@ -107,23 +95,9 @@ Methods for using the canvas with L<WWW::Facebook::API>
 The C<$q> parameter should implement the param method (for example a L<CGI> or
 L<Apache::Request> object).
 
-=head1 SUBROUTINES/METHODS 
+=head1 SUBROUTINES/METHODS
 
 =over
-
-=item new()
-
-Returns a new instance of this class.
-
-=back
-
-=head1 METHODS
-
-=over
-
-=item base()
-
-The L<WWW::Facebook::API> object to use to make calls to the REST server.
 
 =item get_user( $q )
 
