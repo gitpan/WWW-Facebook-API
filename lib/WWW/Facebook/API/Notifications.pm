@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-07-08 18:53:24 -0700 (Sun, 08 Jul 2007) $
-# $Revision: 132 $
+# $Date: 2007-07-10 06:33:18 -0700 (Tue, 10 Jul 2007) $
+# $Revision: 140 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.9');
+use version; our $VERSION = qv('0.4.0');
 
 sub get  { return shift->base->call( 'notifications.get',  @_ ) }
 sub send { return shift->base->call( 'notifications.send', @_ ) } ## no critic
@@ -28,7 +28,7 @@ WWW::Facebook::API::Notifications - Facebook Notifications
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Notifications version 0.3.9
+This document describes WWW::Facebook::API::Notifications version 0.4.0
 
 =head1 SYNOPSIS
 
@@ -54,8 +54,8 @@ The notifications.send method of the Facebook API:
 
     $response = $client->notifications->send(
         to_ids => [1],
-        markup => 'markup',
-        no_email => 1,
+        notifications => 'notifications page FBML',
+        email => 'email FBML',
     );
 
 =item send_request( %params )

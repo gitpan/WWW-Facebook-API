@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-07-08 18:53:24 -0700 (Sun, 08 Jul 2007) $
-# $Revision: 132 $
+# $Date: 2007-07-10 06:33:18 -0700 (Tue, 10 Jul 2007) $
+# $Revision: 140 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.9');
+use version; our $VERSION = qv('0.4.0');
 
 sub create_token {
     my $self = shift;
@@ -86,7 +86,7 @@ sub login {
         : $^O =~ m/MSWin/xms  ? 'start'    ## no critic
         :                       q{};
 
-    croak "Don't know how to open browser for the system $^O" if not $browser;
+    croak "Don't know how to open browser for system '$^O'" if not $browser;
 
     # Open browser have user login to Facebook app
     system qq($browser "$url");
@@ -114,7 +114,7 @@ WWW::Facebook::API::Auth - Facebook Authentication
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Auth version 0.3.9
+This document describes WWW::Facebook::API::Auth version 0.4.0
 
 =head1 SYNOPSIS
 

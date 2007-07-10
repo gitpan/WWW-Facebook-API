@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-07-08 18:53:24 -0700 (Sun, 08 Jul 2007) $
-# $Revision: 132 $
+# $Date: 2007-07-10 06:33:18 -0700 (Tue, 10 Jul 2007) $
+# $Revision: 140 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.9');
+use version; our $VERSION = qv('0.4.0');
 
 sub get_fb_params {
     my $self = shift;
@@ -82,7 +82,7 @@ WWW::Facebook::API::Canvas - Facebook Canvas
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Canvas version 0.3.9
+This document describes WWW::Facebook::API::Canvas version 0.4.0
 
 =head1 SYNOPSIS
 

@@ -1,6 +1,6 @@
 #########################################################################
-# $Date: 2007-07-08 18:53:24 -0700 (Sun, 08 Jul 2007) $
-# $Revision: 132 $
+# $Date: 2007-07-10 06:33:18 -0700 (Tue, 10 Jul 2007) $
+# $Revision: 140 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.3.9');
+use version; our $VERSION = qv('0.4.0');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -181,6 +181,11 @@ sub call {
     # ... and unescape it if it's not going to be parsed
     if ( !$self->desktop && !$self->parse ) {
         $response = $self->unescape_string($response);
+    }
+
+    if ( $self->parse and $self->format eq 'XML' ) {
+        $self->parse(0);
+        carp "format is XML: setting parse to 0" if $self->debug;
     }
 
     return $response if !$self->parse;
@@ -386,7 +391,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.3.9
+This document describes WWW::Facebook::API version 0.4.0
 
 =head1 SYNOPSIS
 
@@ -808,7 +813,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.3.9".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.0".
 
 =back
 
@@ -1081,7 +1086,7 @@ Gisle Aas C<< none >>
 
 J. Shirley C<< <jshirley@gmail.com> >>
 
-Jim Spath C<< none >>
+Jim Spath C<< <jspath@gmail.com> >>
 
 Matt Sickler C<< <imMute@mail.msk3.ath.cx> >>
 
