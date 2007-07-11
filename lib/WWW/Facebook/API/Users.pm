@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-07-10 06:33:18 -0700 (Tue, 10 Jul 2007) $
-# $Revision: 140 $
+# $Date: 2007-07-11 07:47:37 -0700 (Wed, 11 Jul 2007) $
+# $Revision: 148 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,14 +10,13 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.0');
+use version; our $VERSION = qv('0.4.1');
 
 sub get_info { return shift->base->call( 'users.getInfo', @_ ); }
 
 sub get_logged_in_user {
     return shift->base->call( 'users.getLoggedInUser', @_ );
 }
-sub is_app_added { return shift->base->call( 'users.isAppAdded', @_ ); }
 
 1;    # Magic true value required at end of module
 __END__
@@ -28,7 +27,7 @@ WWW::Facebook::API::Users - Facebook Users
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Users version 0.4.0
+This document describes WWW::Facebook::API::Users version 0.4.1
 
 =head1 SYNOPSIS
 
@@ -60,13 +59,6 @@ The users.getInfo method of the Facebook API:
 The users.getLoggedInUser method of the Facebook API:
 
     $uid = $client->users->get_logged_in_user;
-
-=item is_app_added
-
-The users.getIsAppAdded method of the Facebook API (currently not documented,
-but is present in the PHP client):
-
-    $user_has_app = $client->users->is_app_added;
 
 =back
 

@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-07-10 06:33:18 -0700 (Tue, 10 Jul 2007) $
-# $Revision: 140 $
+# $Date: 2007-07-11 07:47:37 -0700 (Wed, 11 Jul 2007) $
+# $Revision: 148 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.0');
+use version; our $VERSION = qv('0.4.1');
 
 sub create_token {
     my $self = shift;
@@ -114,7 +114,7 @@ WWW::Facebook::API::Auth - Facebook Authentication
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Auth version 0.4.0
+This document describes WWW::Facebook::API::Auth version 0.4.1
 
 =head1 SYNOPSIS
 
@@ -139,7 +139,7 @@ regardles of the C<parse> setting in L<WWW::Facebook::API>:
 
 auth.getSession of the Facebook API. If you have the desktop attribute set to
 true and C<$token> isn't passed in, the return value from
-C<$client->auth->create_token> will be used. If the desktop attribute is set
+C<< $client->auth->create_token >> will be used. If the desktop attribute is set
 to false the C<$token> must be the auth_token returned from Facebook to your
 web app for that user:
 

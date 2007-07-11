@@ -1,6 +1,6 @@
 #########################################################################
-# $Date: 2007-07-10 06:33:18 -0700 (Tue, 10 Jul 2007) $
-# $Revision: 140 $
+# $Date: 2007-07-11 07:47:37 -0700 (Wed, 11 Jul 2007) $
+# $Revision: 148 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.0');
+use version; our $VERSION = qv('0.4.1');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -185,7 +185,7 @@ sub call {
 
     if ( $self->parse and $self->format eq 'XML' ) {
         $self->parse(0);
-        carp "format is XML: setting parse to 0" if $self->debug;
+        carp q{format is XML: setting parse to 0} if $self->debug;
     }
 
     return $response if !$self->parse;
@@ -242,17 +242,21 @@ sub require_login { return shift->require( 'login', @_ ); }
 sub require {    ## no critic
     my $self = shift;
     my $what = shift;
-    $self->query(shift) if @_;
+    $self->query(shift);
+    @_ = ();
 
+    if ( $what eq 'login' ) {
+        @_ = qw( canvas ) if $self->canvas->in_frame;
+    }
     if ( $what eq 'frame' ) {
         return if $self->canvas->in_frame;
-        @_ = ( 'canvas' => 1 );
+        @_    = qw( canvas );
         $what = 'login';
     }
 
-    my $user = $self->users->get_logged_in_user();
+    my $user = $self->session_uid;
     if ( $what eq 'add' ) {
-        undef $user unless $self->canvas->get_fb_params->{'added'};
+        $user = undef unless $self->canvas->get_fb_params->{'added'};
     }
     return $user if $user;
 
@@ -297,11 +301,21 @@ sub unescape_string {
 sub _add_url_params {
     my $self   = shift;
     my $params = q{?api_key=} . $self->api_key . q{&v=1.0};
-    my %params = @_;
-    for ( sort keys %params ) {
-        next if not defined $params{$_};
-        $params{$_} = escape( $params{$_} ) if $_ eq 'next';
-        $params .= "&$_=$params{$_}";
+    if (@_) {
+        if ( @_ % 2 ) {
+
+            # Odd number of elelemts, so didn't pass in canvas => 1
+            $params .= q{&canvas} if grep { $_ eq 'canvas' } @_;
+            @_ = grep { $_ ne 'canvas' } @_;
+        }
+        my %params = @_;
+        $params .= q{&canvas} if delete $params{'canvas'};
+
+        for ( sort keys %params ) {
+            next if not defined $params{$_};
+            $params{$_} = escape( $params{$_} ) if $_ eq 'next';
+            $params .= "&$_=$params{$_}";
+        }
     }
     return $params;
 }
@@ -391,7 +405,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.4.0
+This document describes WWW::Facebook::API version 0.4.1
 
 =head1 SYNOPSIS
 
@@ -641,13 +655,6 @@ All method names from the Facebook API are lower_cased instead of CamelCase:
     $response = $client->profile->get_fbml( uid => 3 );
     $response = $client->profile->set_fbml( uid => 5, markup => 'markup' );
 
-=item update
-
-update namespace of the API (See L<WWW::Facebook::API::Update>).
-All method names from the Facebook API are lower_cased instead of CamelCase:
-
-    $response = $client->update->decode_ids( ids => [5,4,3] );
-
 =item users
 
 users namespace of the API (See L<WWW::Facebook::API::Users>).
@@ -774,9 +781,9 @@ does not implement a redirect method.>
 =item secret( $new_secret_key )
 
 For a desktop application, this is the secret that is used for calling
-C<auth->create_token> and C<auth->get_session>. For a web application, secret
-is used for all calls to the API. If C<$ENV{'WFA_SECRET_KEY'}> is set, all
-instances will be initialized with its value. See the Facebook API
+C<< auth->create_token >> and C<< auth->get_session >>. For a web application,
+secret is used for all calls to the API. If C<$ENV{'WFA_SECRET_KEY'}> is set,
+all instances will be initialized with its value. See the Facebook API
 documentation under Authentication for more information.
 
 =item server_uri( $new_server_uri )
@@ -788,17 +795,18 @@ Facebook server, and useful for testing. See the Facebook API documentation.
 =item session_expires( $new_expires )
 
 The session expire timestamp for the client's user. Automatically set when
-C<$client->auth->get_session> is called. See the Facebook API documentation. 
+C<< $client->auth->get_session >> is called. See the Facebook API
+documentation.
 
 =item session_key( $new_key )
 
 The session key for the client's user. Automatically set when
-C<<$client->auth->get_session>> is called. See the Facebook API documentation.
+C<< $client->auth->get_session >> is called. See the Facebook API documentation.
 
 =item session_uid( $new_uid )
 
 The session's uid for the client's user. Automatically set when
-C<<$client->auth->get_session>> is called. See the Facebook API documentation.
+C<< $client->auth->get_session >> is called. See the Facebook API documentation.
 
 =item skipcookie(0|1)
 
@@ -813,7 +821,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.0".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.1".
 
 =back
 
@@ -900,8 +908,8 @@ string out of it showing the parameters used, and the response received.
 
 Called by C<require()> to redirect the user either within the canvas or
 without. This, as with C<require()> is only really useful when having a web
-app. If no <$query_object> is defined, then whatever is in C<$self->query>
-will be used. (See L<WWW::Facebook::API::Canvas>)
+app. If no <$query_object> is defined, then whatever is in
+C<< $client->query >> will be used. (See L<WWW::Facebook::API::Canvas>)
 
 =item require_add( $query )
 
@@ -912,7 +920,6 @@ for the C<$query> parameter.
 
 Redirects the user to what C<get_login_url( canvas => '1' )> returns. See
 C<require()> below for the C<$query> parameter.
-
 
 =item require_login( $query )
 
@@ -926,7 +933,7 @@ Logically, you better know what you want to require when you call each of
 them, so this API consolidates them into one method. The valid values for
 C<$what> are C<'add'>, C<'frame'>, and C<'login'>. C<$query> is the query
 object to use (most likely L<CGI>). If C<$query> is undefined, the value of
-C<$self->query> is used.
+C< $client->query >> is used.
 
 =item session( uid => $uid, key => $session_key, expires => $session_expires )
 
@@ -1056,10 +1063,10 @@ With live tests enabled, here is the current test coverage:
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
   File                           stmt   bran   cond    sub    pod   time  total
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
-  blib/lib/WWW/Facebook/API.pm   93.7   75.8   67.6   92.6  100.0    5.5   88.9
-  .../WWW/Facebook/API/Auth.pm   94.7   66.7  100.0   87.5  100.0   94.1   88.8
-  ...WW/Facebook/API/Canvas.pm   97.6   87.5  100.0  100.0  100.0    0.0   97.1
-  ...WW/Facebook/API/Events.pm  100.0    n/a    n/a  100.0  100.0    0.1  100.0
+  blib/lib/WWW/Facebook/API.pm   98.2   85.0   70.0   98.8  100.0    4.8   94.1
+  .../WWW/Facebook/API/Auth.pm   94.7   72.2  100.0   87.5  100.0   94.9   89.9
+  ...WW/Facebook/API/Canvas.pm   97.6   87.5  100.0  100.0  100.0    0.1   97.1
+  ...WW/Facebook/API/Events.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   .../WWW/Facebook/API/FBML.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...b/WWW/Facebook/API/FQL.pm  100.0  100.0  100.0  100.0  100.0    0.0  100.0
   .../WWW/Facebook/API/Feed.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
@@ -1068,8 +1075,8 @@ With live tests enabled, here is the current test coverage:
   ...book/API/Notifications.pm   86.7    n/a    n/a   71.4  100.0    0.0   84.0
   ...WW/Facebook/API/Photos.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...W/Facebook/API/Profile.pm   87.5    n/a    n/a   75.0  100.0    0.0   85.7
-  ...WWW/Facebook/API/Users.pm   86.7    n/a    n/a   71.4  100.0    0.0   84.0
-  Total                          94.5   75.9   73.3   92.3  100.0  100.0   90.7
+  ...WWW/Facebook/API/Users.pm   92.9    n/a    n/a   83.3  100.0    0.0   90.9
+  Total                          97.6   84.3   75.0   95.8  100.0  100.0   94.3
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 AUTHOR

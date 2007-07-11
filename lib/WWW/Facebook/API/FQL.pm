@@ -1,5 +1,5 @@
-# $Date: 2007-07-10 06:33:18 -0700 (Tue, 10 Jul 2007) $
-# $Revision: 140 $
+# $Date: 2007-07-11 07:47:37 -0700 (Wed, 11 Jul 2007) $
+# $Revision: 148 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.0');
+use version; our $VERSION = qv('0.4.1');
 
 # always return an array reference. The value returned by Facebook is a hash
 # reference when the are no results, so this shouldn't be a problem.
@@ -30,7 +30,7 @@ WWW::Facebook::API::FQL - Facebook Query Language
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::FQL version 0.4.0
+This document describes WWW::Facebook::API::FQL version 0.4.1
 
 =head1 SYNOPSIS
 
@@ -50,8 +50,8 @@ The fql.query method of the Facebook API:
 
     $response = $client->fql->query( query => 'FQL query' );
 
-When C<$self->base->parse> returns true, and when the format is JSON, the
-response will always be an array reference. (Facebook actually returns an
+When C<< $client->base->parse >> returns true, and when the format is JSON,
+the response will always be an array reference. (Facebook actually returns an
 empty hash reference when empty, but an array reference otherwise. This is
 meant to make developer more consistent.)
 

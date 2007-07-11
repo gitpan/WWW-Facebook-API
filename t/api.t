@@ -1,10 +1,10 @@
 #######################################################################
-# $Date: 2007-07-08 15:18:45 -0700 (Sun, 08 Jul 2007) $
-# $Revision: 131 $
+# $Date: 2007-07-11 07:21:31 -0700 (Wed, 11 Jul 2007) $
+# $Revision: 146 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
-use Test::More tests => 34;
+use Test::More 'no_plan'; # tests => 34;
 use WWW::Facebook::API;
 use strict;
 use warnings;
@@ -12,6 +12,11 @@ use warnings;
 my $api = WWW::Facebook::API->new( api_key => 1, secret => 1,
 session_uid => '', session_key => '', session_expires => '' );
 isa_ok $api, 'WWW::Facebook::API';
+
+for ( qw/require_frame require_login/ ) {
+    eval { $api->$_ };
+    like $@, qr/^Can't call method "param"/, "need query for $_";
+}
 
 # Test global environment settings
 {
@@ -132,4 +137,3 @@ END_DEBUG
 
     }
 }
-

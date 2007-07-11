@@ -1,5 +1,14 @@
 Revision history for WWW-Facebook-API
 
+0.4.1  Wed Jul 11 07:39:25 PDT 2007
+	Fixed doc formatting and removed 'update' namespace doc
+	  (Thanks Tom Hukins)
+	Fixed require_* methods and added tests (Thanks Skyler Clark)
+	_get_url_params now works when 'canvas' is passed in by itself, or if
+	 it's passed in as a key.
+	Removed 'is_app_added' from 'users' namespace
+	Updated test coverage
+
 0.4.0  Tue Jul 10 06:28:44 PDT 2007
 	Fixed failing test in t/auth.t on linux (Thanks Tom Hukins)
 	Fixed parse => 1 and format => XML bug (added tests)

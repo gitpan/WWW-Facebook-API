@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-07-10 06:33:18 -0700 (Tue, 10 Jul 2007) $
-# $Revision: 140 $
+# $Date: 2007-07-11 07:47:37 -0700 (Wed, 11 Jul 2007) $
+# $Revision: 148 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.0');
+use version; our $VERSION = qv('0.4.1');
 
 sub get           { return shift->base->call( 'friends.get',         @_ ) }
 sub get_app_users { return shift->base->call( 'friends.getAppUsers', @_ ) }
@@ -25,7 +25,7 @@ WWW::Facebook::API::Friends - Facebook Friends
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Friends version 0.4.0
+This document describes WWW::Facebook::API::Friends version 0.4.1
 
 =head1 SYNOPSIS
 

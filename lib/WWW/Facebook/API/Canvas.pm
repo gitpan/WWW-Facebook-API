@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-07-10 06:33:18 -0700 (Tue, 10 Jul 2007) $
-# $Revision: 140 $
+# $Date: 2007-07-11 07:47:37 -0700 (Wed, 11 Jul 2007) $
+# $Revision: 148 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.0');
+use version; our $VERSION = qv('0.4.1');
 
 sub get_fb_params {
     my $self = shift;
@@ -82,7 +82,7 @@ WWW::Facebook::API::Canvas - Facebook Canvas
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Canvas version 0.4.0
+This document describes WWW::Facebook::API::Canvas version 0.4.1
 
 =head1 SYNOPSIS
 
@@ -106,7 +106,7 @@ L<DESCRIPTION>):
 
     $response = $client->canvas->get_user( $q )
 
-If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+If C<$q> is not passed in, the value returned by C<< $client->base->query() >> is
 used.
 
 =item get_fb_params( $q )
@@ -116,7 +116,7 @@ L<DESCRIPTION>):
 
     $response = $client->canvas->get_fb_params( $q )
 
-If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+If C<$q> is not passed in, the value returned by C<< $client->base->query() >> is
 used.
 
 =item get_non_fb_params( $q )
@@ -127,7 +127,7 @@ Facebook and you want to use the data you POSTed:
 
     $non_fb_params = $client->canvas->get_non_fb_params( $q )
 
-If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+If C<$q> is not passed in, the value returned by C<< $client->base->query() >> is
 used.
 
 =item in_fb_canvas( $q )
@@ -136,7 +136,7 @@ Return true if inside a canvas (See L<DESCRIPTION>):
 
     $response = $client->canvas->in_fb_canvas( $q )
 
-If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+If C<$q> is not passed in, the value returned by C<< $self->base->query() >> is
 used.
 
 =item in_frame( $q )
@@ -145,7 +145,7 @@ Return true if inside an iframe or canvas (See L<DESCRIPTION>):
 
     $response = $client->canvas->in_frame( $q )
 
-If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+If C<$q> is not passed in, the value returned by C<< $self->base->query() >> is
 used.
 
 =item validate_sig( $q )
@@ -157,7 +157,7 @@ L<DESCRIPTION>):
     $fb_params = $client->canvas->validate_sig( $q )
     # $fb_params doesn't contain a sig key
 
-If C<$q> is not passed in, the value returned by C<$self->base->query()> is
+If C<$q> is not passed in, the value returned by C<< $self->base->query() >> is
 used.
 
 =back
@@ -191,7 +191,6 @@ L<http://rt.cpan.org>.
 
 David Leadbeater  C<< http://dgl.cx >>
 David Romano  C<< <unobe@cpan.org> >>
-
 
 =head1 LICENSE AND COPYRIGHT
 
