@@ -1,5 +1,16 @@
 Revision history for WWW-Facebook-API
 
+0.4.2  Sun Jul 15 03:10:07 PDT 2007
+	*** API CHANGE ***
+	WFA_SECRET_KEY environment variable is now WFA_SECRET
+	Config can now be loaded from a file if specified as a parameter:
+	  config => 'file_name'
+	Any calls to Facebook that returned empty hash/array references will now
+	  return nothing instead of the empty reference.
+	Reworked require_* and redirect methods to work better. See docs.
+	  redirect() now punts to CGI->new->redirect (was $self->query->redirect)
+	Try to fix test failure when checking debug output
+
 0.4.1  Wed Jul 11 07:39:25 PDT 2007
 	Fixed doc formatting and removed 'update' namespace doc
 	  (Thanks Tom Hukins)

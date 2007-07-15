@@ -1,6 +1,6 @@
 #########################################################################
-# $Date: 2007-07-11 07:47:37 -0700 (Wed, 11 Jul 2007) $
-# $Revision: 148 $
+# $Date: 2007-07-15 03:11:41 -0700 (Sun, 15 Jul 2007) $
+# $Revision: 159 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,11 +10,12 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.1');
+use version; our $VERSION = qv('0.4.2');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
 use Digest::MD5 qw(md5_hex);
+use CGI;
 use CGI::Util qw(escape);
 
 our @namespaces = qw(
@@ -54,22 +55,21 @@ for (@namespaces) {
 }
 
 our %attributes = (
-    api_key => ( exists $ENV{'WFA_API_KEY'}    && $ENV{'WFA_API_KEY'} ),
-    secret  => ( exists $ENV{'WFA_SECRET_KEY'} && $ENV{'WFA_SECRET_KEY'} ),
-    desktop => ( exists $ENV{'WFA_DESKTOP'}    && $ENV{'WFA_DESKTOP'} ),
-    parse   => 1,
-    format  => 'JSON',
-    debug   => 0,
+    parse        => 1,
+    format       => 'JSON',
+    debug        => 0,
     throw_errors => 1,
     api_version  => '1.0',
     apps_uri     => 'http://apps.facebook.com/',
     server_uri   => 'http://api.facebook.com/restserver.php',
     (   map { $_ => q{} }
             qw(
+            api_key             secret      desktop
             last_call_success   last_error  skipcookie
             popup               next        session_key
             session_expires     session_uid callback
             app_path            ua          query
+            config
             )
     ),
 );
@@ -87,7 +87,7 @@ for ( keys %attributes ) {
     croak "Cannot create attribute $_: $@\n" if $@;
 }
 
-sub _set_from_env {
+sub _set_from_outside {
     my $self = shift;
 
     my $app_path = '_' . ( $self->{'app_path'} || $self->app_path );
@@ -96,16 +96,56 @@ sub _set_from_env {
 
     my %ENV_VARS = qw(
         WFA_API_KEY     api_key
-        WFA_SECRET_KEY  secret
+        WFA_SECRET      secret
         WFA_DESKTOP     desktop
         WFA_SESSION_KEY session_key
     );
+
+    $self->_set_from_file( $app_path, %ENV_VARS ) if $self->{'config'};
+    $self->_set_from_env( $app_path, %ENV_VARS );
+
+    return;
+}
+
+sub _set_from_file {
+    my $self     = shift;
+    my $app_path = shift;
+    my %ENV_VARS = @_;
+
+    # fail silently if file can't be opened
+    open my $config, '<', $self->{'config'}
+        or croak "Cannot open $self->{'config'}";
+
+    while (<$config>) {
+        carp "Config line: $_" if $self->{'debug'};
+        chomp;
+        my ( $key, $val ) = split m/=/xms, $_, 2;
+        next if !$key;
+        carp "Key/Val pair: $key -> $val" if $self->{'debug'};
+        for ( $key, $val ) {
+            s/\A\s+//xms;
+            s/\s+\Z//xms;
+        }
+        $ENV{$key} ||= $val;
+    }
+
+    return;
+}
+
+sub _set_from_env {
+    my $self     = shift;
+    my $app_path = shift;
+    my %ENV_VARS = @_;
 
     for ( keys %ENV_VARS ) {
         if ( exists $ENV{ $_ . $app_path } ) {
             $self->{ $ENV_VARS{$_} } ||= $ENV{ $_ . $app_path };
         }
+        elsif ( exists $ENV{$_} ) {
+            $self->{ $ENV_VARS{$_} } ||= $ENV{$_};
+        }
     }
+
     return;
 }
 
@@ -113,7 +153,7 @@ sub new {
     my ( $self, %args ) = @_;
     my $class = ref $self || $self;
     $self = bless \%args, $class;
-    $self->_set_from_env();    # set api_key etc. if needed
+    $self->_set_from_outside();    # set api_key etc. if needed
 
     $self->{'ua'} ||=
         LWP::UserAgent->new( agent => "Perl-WWW-Facebook-API/$VERSION" );
@@ -190,7 +230,15 @@ sub call {
 
     return $response if !$self->parse;
 
-    return $self->_parse($response);
+    $response = $self->_parse($response);
+
+    # Empty result
+    if (   ( ref $response eq 'HASH' && !keys %{$response} )
+        || ( ref $response eq 'ARRAY' && @{$response} == 0 ) )
+    {
+        return;
+    }
+    return $response;
 }
 
 sub generate_sig {
@@ -222,7 +270,9 @@ sub redirect {
     if ( $self->canvas->in_fb_canvas ) {
         return qq{<fb:redirect url="$url" />};
     }
-    elsif ( $url =~ m[^https?://([^/]*\.)?facebook\.com(:\d+)?]ixms ) {
+    elsif ($url =~ m[^https?://([^/]*\.)?facebook\.com(:\d+)?]ixms
+        && $self->session_uid )
+    {
         return join q{},
             map {"$_\n"}
             '<script type="text/javascript">'
@@ -230,9 +280,9 @@ sub redirect {
             . '</script>';
     }
 
-    croak 'Cannot redirect!' unless $self->query->can('redirect');
-
-    return $self->query->redirect($url);
+    print CGI->new->redirect(
+        $self->get_app_url( next => $self->get_login_url ) );
+    return 1;
 }
 
 sub require_add   { return shift->require( 'add',   @_ ); }
@@ -254,11 +304,13 @@ sub require {    ## no critic
         $what = 'login';
     }
 
-    my $user = $self->session_uid;
+    my $user = $self->canvas->get_fb_params->{'user'};
     if ( $what eq 'add' ) {
-        $user = undef unless $self->canvas->get_fb_params->{'added'};
+        if ( !$self->canvas->get_fb_params->{'added'} ) {
+            $user = undef;
+        }
     }
-    return $user if $user;
+    return if $user;
 
     return $self->redirect( $self->get_url( $what, @_ ) );
 }
@@ -405,13 +457,13 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.4.1
+This document describes WWW::Facebook::API version 0.4.2
 
 =head1 SYNOPSIS
 
     use WWW::Facebook::API;
 
-    # @ENV{qw/WFA_API_KEY WFA_SECRET_KEY WFA_DESKTOP/} are the initial values,
+    # @ENV{qw/WFA_API_KEY WFA_SECRET WFA_DESKTOP/} are the initial values,
     # so use those if you only have one app and don't want to pass in values
     # to constructor
     my $client = WWW::Facebook::API->new(
@@ -457,6 +509,7 @@ the following environment variables are used to set the defaults for new
 instances:
 
     WFA_API_KEY
+    WFA_SECRET
     WFA_SESSION_KEY
     WFA_DESKTOP
 
@@ -464,6 +517,7 @@ Additionally, for each instance that is created, the following environment
 variables are used if no values are set:
 
     WFA_API_KEY_APP_PATH
+    WFA_SECRET_APP_PATH
     WFA_SESSION_KEY_APP_PATH
     WFA_DESKTOP_APP_PATH
 
@@ -727,6 +781,19 @@ that order:
 The C<call> method calls this method, and shouldn't need to be called to set
 anything, just to get the value later if C<throw_errors> is false.
 
+=item config($filename)
+
+Used when instantiating a new object to set the environment variables. The
+file has a simple, BASH-style format:
+
+    WFA_API_KEY_MYAPP=383378efa485934bc
+    WFA_SECRET_MYAPP=234234ac902f340923
+    WFA_SESSION_KEY_MYAPP=34589349abce989d
+    WFA_DESKTOP_MYAPP=1
+
+If the file is found, and the environment variables are already set, then the
+variables will not be changed.
+
 =item debug(0|1)
 
 A boolean set to either true or false, determining if debugging messages
@@ -782,7 +849,7 @@ does not implement a redirect method.>
 
 For a desktop application, this is the secret that is used for calling
 C<< auth->create_token >> and C<< auth->get_session >>. For a web application,
-secret is used for all calls to the API. If C<$ENV{'WFA_SECRET_KEY'}> is set,
+secret is used for all calls to the API. If C<$ENV{'WFA_SECRET'}> is set,
 all instances will be initialized with its value. See the Facebook API
 documentation under Authentication for more information.
 
@@ -821,7 +888,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.1".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.2".
 
 =back
 
@@ -836,6 +903,10 @@ to call the Facebook REST interface. It takes in a string signifying the method
 to be called (e.g., 'auth.getSession'), and key/value pairs for the parameters
 to use:
     $client->call( 'auth.getSession', auth_token => 'b3324235e' );
+
+For all calls, if C< parse > is set to true and an empty hash/array reference
+is returned from facebook, nothing will be returned instead of the empty
+hash/array reference.
 
 =item generate_sig( params => $params_hashref, secret => $secret )
 
@@ -907,9 +978,29 @@ string out of it showing the parameters used, and the response received.
 =item redirect( $url, $query_object )
 
 Called by C<require()> to redirect the user either within the canvas or
-without. This, as with C<require()> is only really useful when having a web
-app. If no <$query_object> is defined, then whatever is in
-C<< $client->query >> will be used. (See L<WWW::Facebook::API::Canvas>)
+without. If no <$query_object> is defined, then whatever is in C<<
+$client->query >> will be used. (See L<WWW::Facebook::API::Canvas>) If no
+redirect is required, nothing is returned. That is the only case when there is
+no return value. If a redirect B<is> required, there are two cases that are
+covered:
+
+=over 4
+
+=item user not logged in
+
+If there isn't a user logged in to Facebook's system, then a redirect to the Facebook
+login page is printed to STDOUT with a next parameter to the appropriate page.
+The redirect is called with the the CGI module that comes standard with perl.
+The return value in this case is 1.
+
+=item user logged in
+
+If the user is logged in to Facebook, and a redirect is required, the
+necessary FBML is returned: C<< <fb:redirect url="WHATEVER"> >>.
+So the return value is the FBML, which you can then print to STDOUT.
+
+=back
+
 
 =item require_add( $query )
 
@@ -1010,12 +1101,6 @@ Cannot create the needed subclass method. Contact the developer to report.
 
 Cannot create the needed attribute method. Contact the developer to report.
 
-=item C<< Cannot redirect without redirect method! >>
-
-You're not using L<CGI> as a query object when calling C<redirect()> (or one
-of the C<require_*> methods. The query object you're using must implement the
-C<redirect()> method as L<CGI> does.
-
 =back
 
 =head1 CONFIGURATION AND ENVIRONMENT
@@ -1052,7 +1137,7 @@ http://code.google.com/p/perl-www-facebook-api/
 There are some live tests included, but they are only run if the following
 environment variables are set:
     WFA_API_KEY_TEST
-    WFA_SECRET_KEY_TEST
+    WFA_SECRET_TEST
     WFA_SESSION_KEY_TEST
 
 Additionally, if your app is a desktop one, you must set C<WFA_DESKTOP_TEST>.
@@ -1063,12 +1148,12 @@ With live tests enabled, here is the current test coverage:
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
   File                           stmt   bran   cond    sub    pod   time  total
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
-  blib/lib/WWW/Facebook/API.pm   98.2   85.0   70.0   98.8  100.0    4.8   94.1
-  .../WWW/Facebook/API/Auth.pm   94.7   72.2  100.0   87.5  100.0   94.9   89.9
+  blib/lib/WWW/Facebook/API.pm   98.7   85.2   67.2   98.8  100.0    7.7   93.8
+  .../WWW/Facebook/API/Auth.pm   94.7   72.2  100.0   87.5  100.0   91.9   89.9
   ...WW/Facebook/API/Canvas.pm   97.6   87.5  100.0  100.0  100.0    0.1   97.1
   ...WW/Facebook/API/Events.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   .../WWW/Facebook/API/FBML.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  ...b/WWW/Facebook/API/FQL.pm  100.0  100.0  100.0  100.0  100.0    0.0  100.0
+  ...b/WWW/Facebook/API/FQL.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   .../WWW/Facebook/API/Feed.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...W/Facebook/API/Friends.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...WW/Facebook/API/Groups.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
@@ -1076,7 +1161,7 @@ With live tests enabled, here is the current test coverage:
   ...WW/Facebook/API/Photos.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...W/Facebook/API/Profile.pm   87.5    n/a    n/a   75.0  100.0    0.0   85.7
   ...WWW/Facebook/API/Users.pm   92.9    n/a    n/a   83.3  100.0    0.0   90.9
-  Total                          97.6   84.3   75.0   95.8  100.0  100.0   94.3
+  Total                          98.0   84.3   69.8   95.9  100.0  100.0   94.1
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 AUTHOR

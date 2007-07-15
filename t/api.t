@@ -1,10 +1,10 @@
 #######################################################################
-# $Date: 2007-07-11 07:21:31 -0700 (Wed, 11 Jul 2007) $
-# $Revision: 146 $
+# $Date: 2007-07-15 03:11:07 -0700 (Sun, 15 Jul 2007) $
+# $Revision: 158 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
-use Test::More 'no_plan'; # tests => 34;
+use Test::More tests => 36;
 use WWW::Facebook::API;
 use strict;
 use warnings;
@@ -21,26 +21,26 @@ for ( qw/require_frame require_login/ ) {
 # Test global environment settings
 {
     local %ENV = %ENV;
-    @ENV{ map { "WFA_$_" } qw/API_KEY SECRET_KEY DESKTOP/} = qw/3 2 1/;
+    @ENV{ map { "WFA_$_" } qw/API_KEY SECRET DESKTOP/} = qw/3 2 1/;
 
     ## no warnings 'redefine' still warns... :-(
     local %WWW::Facebook::API::;
     delete @INC{ grep { m[^WWW/Facebook/API]xms } keys %INC};
     require WWW::Facebook::API;
     
-    my $api = WWW::Facebook::API->new();
+    my $api = WWW::Facebook::API->new( app_path => 'hey' );
     is $api->api_key, 3, 'WFA_API_KEY ok';
-    is $api->secret, 2, 'WFA_SECRET_KEY ok';
+    is $api->secret, 2, 'WFA_SECRET ok';
     is $api->desktop, 1, 'WFA_DESKTOP ok';
 }
 
 # Test app-specific environment settings
 {
     local %ENV = %ENV;
-    @ENV{ map { "WFA_${_}_TEST_ME" } qw/API_KEY SECRET_KEY DESKTOP/} = qw/3 2 1/;
+    @ENV{ map { "WFA_${_}_TEST_ME" } qw/API_KEY SECRET DESKTOP/} = qw/3 2 1/;
     my $api = WWW::Facebook::API->new( app_path => 'test-me' );
     is $api->api_key, 3, 'WFA_API_KEY_TEST_ME ok';
-    is $api->secret, 2, 'WFA_SECRET_KEY_TEST_ME ok';
+    is $api->secret, 2, 'WFA_SECRET_TEST_ME ok';
     is $api->desktop, 1, 'WFA_DESKTOP_TEST_ME ok';
 }
 
@@ -104,22 +104,19 @@ is $api->verify_sig( sig => $sig, %sig_params ), '', 'sig verify 3 nok';
     isnt $secret, $api->secret, 'secret not object\'s';
     is  $secret, $args->{'params'}->{'secret'}, 'secret is param\'s';
     is $args->{'params'}->{'method'}, 'facebook.hello', 'call method changed';
+
     eval q{use IO::String};
     SKIP: {
         skip 'Need IO::String to test debug output' => 1 if $@;
 
-        my $debug;
-        open my $stderr, '>&STDERR' or diag "Cannot copy STDERR";
-        {
-            close STDERR;
-            tie *STDERR, 'IO::String';
-            $api->debug(1);
-            $secret = $api->call( 'hey', %$args );
-            $api->debug(0);
-            seek(STDERR, 0, 0);
-            $debug = join '', <STDERR>;
-            untie *STDERR;
-        }
+        my ($old_stderr, $new_stderr) = redirect_fh(*STDERR);
+        *STDERR = $new_stderr;
+        $api->debug(1);
+        $secret = $api->call( 'hey', %$args );
+        $api->debug(0);
+        seek($new_stderr, 0, 0);
+        my $debug = join '', <$new_stderr>;
+        *STDERR = $old_stderr;
         like $debug, <<'END_DEBUG', 'debug string ok';
 /\s*params\s=\s*
        api_key:1\s*
@@ -131,9 +128,15 @@ is $api->verify_sig( sig => $sig, %sig_params ), '', 'sig verify 3 nok';
        v:1.0\s*
  response\s=\s*
  "foo"\s*
-(?-x: at t/api.t line \d+
-JSON::Any is parsing with [^\ ]+ at t/api.t line \d+)/xms
+(?-x: at [^\ ]+ line \d+
+JSON::Any is parsing with [^\ ]+ at [^\ ]+ line \d+)/xms
 END_DEBUG
 
     }
+}
+
+sub redirect_fh {
+    my $old = select shift;
+    my $new = IO::String->new;
+    return ( $old, $new );
 }

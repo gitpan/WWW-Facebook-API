@@ -1,6 +1,6 @@
 #######################################################################
-# $Date: 2007-07-11 07:47:37 -0700 (Wed, 11 Jul 2007) $
-# $Revision: 148 $
+# $Date: 2007-07-15 03:11:41 -0700 (Sun, 15 Jul 2007) $
+# $Revision: 159 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.1');
+use version; our $VERSION = qv('0.4.2');
 
 sub get         { return shift->base->call( 'groups.get',        @_ ) }
 sub get_members { return shift->base->call( 'groups.getMembers', @_ ) }
@@ -24,7 +24,7 @@ WWW::Facebook::API::Groups - Facebook Groups
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Groups version 0.4.1
+This document describes WWW::Facebook::API::Groups version 0.4.2
 
 =head1 SYNOPSIS
 
