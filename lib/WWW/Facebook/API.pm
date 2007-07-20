@@ -1,6 +1,6 @@
 #########################################################################
-# $Date: 2007-07-15 03:11:41 -0700 (Sun, 15 Jul 2007) $
-# $Revision: 159 $
+# $Date: 2007-07-20 15:04:55 -0700 (Fri, 20 Jul 2007) $
+# $Revision: 168 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.2');
+use version; our $VERSION = qv('0.4.3');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -120,7 +120,7 @@ sub _set_from_file {
         carp "Config line: $_" if $self->{'debug'};
         chomp;
         my ( $key, $val ) = split m/=/xms, $_, 2;
-        next if !$key;
+        next                              if !$key;
         carp "Key/Val pair: $key -> $val" if $self->{'debug'};
         for ( $key, $val ) {
             s/\A\s+//xms;
@@ -293,14 +293,13 @@ sub require {    ## no critic
     my $self = shift;
     my $what = shift;
     $self->query(shift);
-    @_ = ();
 
     if ( $what eq 'login' ) {
-        @_ = qw( canvas ) if $self->canvas->in_frame;
+        unshift @_, qw( canvas ) if $self->canvas->in_frame;
     }
     if ( $what eq 'frame' ) {
         return if $self->canvas->in_frame;
-        @_    = qw( canvas );
+        unshift @_, qw( canvas );
         $what = 'login';
     }
 
@@ -332,6 +331,10 @@ sub get_url {
 
     if ( $type eq 'app' ) {
         return $self->apps_uri . $self->app_path . q{/};
+    }
+
+    if ( $type eq 'custom' ) {
+        return (shift) . $self->_add_url_params(@_);
     }
 
     return $self->get_url('facebook')
@@ -457,7 +460,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.4.2
+This document describes WWW::Facebook::API version 0.4.3
 
 =head1 SYNOPSIS
 
@@ -888,7 +891,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.2".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.3".
 
 =back
 
@@ -966,9 +969,11 @@ defined) included. If the C<next> parameter is passed in, it's string-escaped:
 =item get_url( $type, @args )
 
 Called by all the above C<get_*_url> methods above. C<$type> can be C<'login'>,
-C<'app'>, C<'add'>, C<'facebook'>, or C<'infinite_session'>. C<@args> is
-either a scalar (in the case when C<$type> is C<'facebook'>) or a hash. All of
-these C<get_*_url> methods correspond to the ones in the official PHP client.
+C<'app'>, C<'add'>, C<'facebook'>, C<'infinite_session'>, or C<'custom'>.
+C<@args> contains the query parameters for the the cases when C<$type> is not
+C<'app'> or C<'facebook'>. In the case of C<'custom'>, the first item in
+C<@args> is the url path relative to the facebook website. All of the
+C<get_*_url> methods correspond to the ones in the official PHP client.
 
 =item log_string($params_hashref, $response)
 

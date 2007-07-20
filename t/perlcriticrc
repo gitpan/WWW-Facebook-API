@@ -1,0 +1,5 @@
+exclude = CodeLayout::RequireTidyCode
+[-ControlStructures::ProhibitPostfixControls]
+[-ControlStructures::ProhibitUnlessBlocks]
+[-Variables::ProhibitPackageVars]
+[-Miscellanea::RequireRcsKeywords]
