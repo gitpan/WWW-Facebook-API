@@ -1,6 +1,6 @@
 #########################################################################
-# $Date: 2007-07-20 15:04:55 -0700 (Fri, 20 Jul 2007) $
-# $Revision: 168 $
+# $Date: 2007-07-27 20:38:08 -0700 (Fri, 27 Jul 2007) $
+# $Revision: 171 $
 # $Author: david.romano $
 # ex: set ts=8 sw=4 et
 #########################################################################
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.3');
+use version; our $VERSION = qv('0.4.4');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -69,7 +69,7 @@ our %attributes = (
             popup               next        session_key
             session_expires     session_uid callback
             app_path            ua          query
-            config
+            config              app_id
             )
     ),
 );
@@ -205,7 +205,8 @@ sub call {
         |   \{ "error_code" \D (\d+) .* "error_msg"[^"]+ "([^"]+)" /xms
         )
     {
-        $self->call_success( 0, "$1: $2" );
+        $self->call_success( 0, "$1: $2" ) if defined $1;
+        $self->call_success( 0, "$3: $4" ) if defined $3;
 
         confess "Error during REST $method call:",
             $self->log_string( $params, $response )
@@ -340,7 +341,7 @@ sub get_url {
     return $self->get_url('facebook')
         . (
           $type eq 'add'              ? '/add.php'
-        : $type eq 'infinite_session' ? '/codegen.php'
+        : $type eq 'infinite_session' ? '/code_gen.php'
         : $type eq 'login'            ? '/login.php'
         : q{}
         ) . $self->_add_url_params(@_);
@@ -460,7 +461,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.4.3
+This document describes WWW::Facebook::API version 0.4.4
 
 =head1 SYNOPSIS
 
@@ -742,6 +743,12 @@ Which version to use (default is "1.0", which is the only one supported
 currently. Corresponds to the argument C<v> that is passed in to methods as a
 parameter.
 
+=item app_id()
+
+The application id where your Facebook app is described, e.g.:
+
+    http://www.facebook.com/apps/application.php?id=THIS_NUMBER
+
 =item app_path()
 
 If using the Facebook canvas, the path to your application. For example if your
@@ -891,7 +898,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.3".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.4".
 
 =back
 
