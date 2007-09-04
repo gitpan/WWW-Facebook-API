@@ -1,7 +1,7 @@
 #######################################################################
-# $Date: 2007-07-20 15:04:55 -0700 (Fri, 20 Jul 2007) $
-# $Revision: 168 $
-# $Author: david.romano $
+# $Date$
+# $Revision$
+# $Author$
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Photos;
@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.4');
+use version; our $VERSION = qv('0.4.5');
 
 sub add_tag      { return shift->base->call( 'photos.addTag',      @_ ) }
 sub create_album { return shift->base->call( 'photos.createAlbum', @_ ) }
@@ -97,6 +97,8 @@ The photos.upload method of the Facebook API:
         caption => 'beach',
         data => 'raw data',
     );
+
+Currently, only jpeg photos can be uploaded.
 
 =back
 

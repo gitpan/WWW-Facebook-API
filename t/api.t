@@ -1,7 +1,7 @@
 #######################################################################
-# $Date: 2007-07-15 03:11:07 -0700 (Sun, 15 Jul 2007) $
-# $Revision: 158 $
-# $Author: david.romano $
+# $Date$
+# $Revision$
+# $Author$
 # ex: set ts=8 sw=4 et
 #########################################################################
 use Test::More tests => 36;
@@ -98,46 +98,18 @@ is $api->verify_sig( sig => $sig, %sig_params ), '', 'sig verify 3 nok';
 # call method
 {
     no warnings 'redefine';
-    local $WWW::Facebook::API::{_post_request} = sub { return qq{"$_[2]"} };
+    local $WWW::Facebook::API::{_post_request} = sub { qq{"$_[1]->{'secret'}"} };
     my $args = { params => { method => 'hello', secret => 'foo' } };
     my $secret = $api->call( 'hey', %$args );
     isnt $secret, $api->secret, 'secret not object\'s';
     is  $secret, $args->{'params'}->{'secret'}, 'secret is param\'s';
     is $args->{'params'}->{'method'}, 'facebook.hello', 'call method changed';
 
-    pass 'debug string ok';
-
-=for TODO IO::String isn't working for everyone (v0.4.3)
-    eval q{use IO::String};
-    SKIP: {
-        skip 'Need IO::String to test debug output' => 1 if $@;
-
-        my ($old_stderr, $new_stderr) = redirect_fh(*STDERR);
-        *STDERR = $new_stderr;
-        $api->debug(1);
-        $secret = $api->call( 'hey', %$args );
-        $api->debug(0);
-        seek($new_stderr, 0, 0);
-        my $debug = join '', <$new_stderr>;
-        *STDERR = $old_stderr;
-        like $debug, <<'END_DEBUG', 'debug string ok';
-/\s*params\s=\s*
-       api_key:1\s*
-       format:JSON\s*
-       method:facebook.facebook.hello\s*
-       secret:foo\s*
-       session_key:cd324235fe34353\s*
-       sig:54c540e9324e6daf895c120736c9ac59\s*
-       v:1.0\s*
- response\s=\s*
- "foo"\s*
-(?-x: at [^\ ]+ line \d+
-JSON::Any is parsing with [^\ ]+ at [^\ ]+ line \d+)/xms
-END_DEBUG
-
-    }
-
-=cut
+    $args = { ids => [3,4,5,6] };
+    my $ids = q{};
+    $WWW::Facebook::API::{_post_request} = sub { $ids = $_[1]->{'ids'}; qq{"$_[1]->{'secret'}"} };
+    $api->call('method', %$args );
+    is $ids, '3,4,5,6', 'Array refs flattened';
 
 }
 

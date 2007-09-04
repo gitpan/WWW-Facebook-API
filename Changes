@@ -1,5 +1,12 @@
 Revision history for WWW-Facebook-API
 
+0.4.5  Mon Sep  3 16:35:59 PDT 2007
+	BUG FIX: $api->photos->upload now works as documented
+	BUG FIX: some session keys weren't being parsed correctly,
+	  which made later API calls ultimately fail.
+	Updated tests to account for FBML version
+	Some internal refactoring
+
 0.4.4  Sat Jul 28 13:59:17 PDT 2007
 	Fixed get_infinite_sesion url (codegen => code_gen)
 	Fixed error message carping (only matters in debug mode)
