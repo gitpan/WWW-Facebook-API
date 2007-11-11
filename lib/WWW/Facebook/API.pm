@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.7');
+use version; our $VERSION = qv('0.4.8');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -23,6 +23,7 @@ our @namespaces = qw(
     FBML            Feed            FQL
     Friends         Groups          Notifications
     Photos          Profile         Users
+    Marketplace
 );
 
 for (@namespaces) {
@@ -32,8 +33,17 @@ for (@namespaces) {
     eval qq(
         use $package;
 
-        *${package}::base = sub { return shift->{'base'}; };
-        *${package}::new = sub {
+        sub $name {
+            my \$self = shift;
+            unless ( \$self->{'_$name'} ) {
+                \$self->{'_$name'} = $package->new( base => \$self );
+            }
+            return \$self->{'_$name'};
+        }
+
+        package $package;
+        sub base { return shift->{'base'}; };
+        sub new {
             my ( \$class, \%args ) = \@_;
             my \$self = bless \\\%args, \$class;
 
@@ -43,13 +53,6 @@ for (@namespaces) {
             return \$self;
         };
 
-        sub $name {
-            my \$self = shift;
-            unless ( \$self->{'_$name'} ) {
-                \$self->{'_$name'} = $package->new( base => \$self );
-            }
-            return \$self->{'_$name'};
-        }
     );
     croak "Cannot create namespace $name: $@\n" if $@;
 }
@@ -195,7 +198,7 @@ sub call {
         $self->_format_and_check_params( $method, %args );
     $sig = $self->generate_sig(
         params => $params,
-        secret => $params->{'secret'}
+        secret => delete $params->{'secret'},
     );
 
     $response = $self->_post_request( $params, $sig, $img_data );
@@ -500,7 +503,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.4.7
+This document describes WWW::Facebook::API version 0.4.8
 
 =head1 SYNOPSIS
 
@@ -717,6 +720,13 @@ All method names from the Facebook API are lower_cased instead of CamelCase:
         image   => 'image url',
         invite  => 0|1,
     );
+
+=item marketplace
+
+marketplace namespace of the API (See L<WWW::Facebook::API::Marketplace>).
+All method names from the Facebook API are lower_cased instead of CamelCase:
+
+    $categories = $client->marketplace->get_categories;
 
 =item photos
 
@@ -940,7 +950,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.7".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.8".
 
 =back
 
@@ -1183,6 +1193,43 @@ It returns a list of items, all of which should be interesting to you.
 
 =back
 
+=head1 FAQ
+
+=over
+
+=item Id numbers returned by Facebook are being rounded. What is the problem?
+
+The JSON module that is installed on your system is converting the numbers to
+Perl and is losing precision in the process. Make sure you have the latest
+L<JSON::XS> module installed or L<JSON::DWIW> (any recent version of either
+should work).
+
+=item How do I run the examples in the examples directory?
+
+There are two types of examples in the examples directory, desktop-based and
+web-based. With desktop-based, the api key and secret key are prompted for on
+STDIN, and then the user's browser is opened and directed to the Facebook
+log in page. Currently, the desktop-based examples pause for 20 seconds to
+allow for the user to enter in their credentials.
+
+With web-based, you have to pass in the api key, secret key, and app path to
+the constructor, and then place the script at the callback url you specified
+in the Facebook setup for your application. For instance, when using the
+web-based example, you might have the following callback url (note the
+trailing slash):
+    
+    http://www.example.com/facebook-canvas-json/
+
+You have to make sure the required Perl modules are in the C<@INC> path for
+the web server process, otherwise there will be a 500 Internal Server error.
+The easiest way to do that is to put the following at the top of the example
+script (as long as "path-to-perl5-libs" is readable by the web server
+process):
+
+    use lib "path-to-perl5-libs";
+
+=back
+
 =head1 CONFIGURATION AND ENVIRONMENT
 
 WWW::Facebook::API requires no configuration files or environment variables.
@@ -1228,20 +1275,21 @@ With live tests enabled, here is the current test coverage:
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
   File                           stmt   bran   cond    sub    pod   time  total
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
-  blib/lib/WWW/Facebook/API.pm   97.3   82.8   63.6   97.8  100.0    7.0   92.2
-  .../WWW/Facebook/API/Auth.pm   95.1   77.3  100.0   90.9  100.0   92.6   91.3
-  ...WW/Facebook/API/Canvas.pm   97.6   87.5  100.0  100.0  100.0    0.2   97.1
-  ...WW/Facebook/API/Events.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
+  blib/lib/WWW/Facebook/API.pm   97.4   82.9   63.6   98.3  100.0    9.6   92.7
+  .../WWW/Facebook/API/Auth.pm   95.1   77.3  100.0   90.9  100.0   89.1   91.3
+  ...WW/Facebook/API/Canvas.pm   97.6   87.5  100.0  100.0  100.0    0.4   97.1
+  ...WW/Facebook/API/Events.pm  100.0    n/a    n/a  100.0  100.0    0.6  100.0
   .../WWW/Facebook/API/FBML.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...b/WWW/Facebook/API/FQL.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   .../WWW/Facebook/API/Feed.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...W/Facebook/API/Friends.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...WW/Facebook/API/Groups.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
+  ...cebook/API/Marketplace.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...book/API/Notifications.pm   86.7    n/a    n/a   71.4  100.0    0.0   84.0
   ...WW/Facebook/API/Photos.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...W/Facebook/API/Profile.pm   87.5    n/a    n/a   75.0  100.0    0.0   85.7
-  ...WWW/Facebook/API/Users.pm   92.9    n/a    n/a   83.3  100.0    0.0   90.9
-  Total                          97.0   82.4   68.3   95.5  100.0  100.0   93.0
+  ...WWW/Facebook/API/Users.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
+  Total                          97.3   82.6   68.3   96.8  100.0  100.0   93.7
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 AUTHOR
@@ -1277,6 +1325,10 @@ Simon Cavalletto C<< <simonm@cavalletto.org> >>
 Skyler Clark C<< none >>
 
 Thomas Sibley C<< <tsibley@cpan.org> >>
+
+Derek Del Conte C<< derek@delconte.org >>
+
+King Mak C<< none >>
 
 =head1 LICENSE AND COPYRIGHT
 

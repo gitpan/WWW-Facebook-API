@@ -10,12 +10,24 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.4');
+use version; our $VERSION = qv('0.4.8');
 
 sub get_info { return shift->base->call( 'users.getInfo', @_ ); }
 
 sub get_logged_in_user {
     return shift->base->call( 'users.getLoggedInUser', @_ );
+}
+
+sub has_app_permission {
+    return shift->base->call( 'users.hasAppPermission', @_ );
+}
+
+sub is_app_added {
+    return shift->base->call( 'users.isAppAdded', @_ );
+}
+
+sub set_status {
+    return shift->base->call( 'users.setStatus', @_ );
 }
 
 1;    # Magic true value required at end of module
@@ -27,7 +39,7 @@ WWW::Facebook::API::Users - Facebook Users
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Users version 0.4.4
+This document describes WWW::Facebook::API::Users version 0.4.8
 
 =head1 SYNOPSIS
 
@@ -59,6 +71,29 @@ The users.getInfo method of the Facebook API:
 The users.getLoggedInUser method of the Facebook API:
 
     $uid = $client->users->get_logged_in_user;
+
+=item has_app_permission
+
+The users.hasAppPermission method of the Facebook API:
+
+    $response = $client->users->has_app_permission(
+        ext_perm => 'status_update|photo_upload'
+    );
+
+=item is_app_added
+
+The users.isAppAdded method of the Facebook API:
+
+    $app_added = $client->users->is_app_added;
+
+=item set_status
+
+The users.setStatus method of the Facebook API:
+
+    $response = $client->users->set_status(
+        status => 'status message',
+        clear => 1|0,
+    );
 
 =back
 

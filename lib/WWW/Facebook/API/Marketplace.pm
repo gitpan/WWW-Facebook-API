@@ -1,10 +1,10 @@
 #######################################################################
-# $Date$
-# $Revision$
-# $Author$
+# $Date: 2007-05-28T14:18:18.679359Z $
+# $Revision: 1508 $
+# $Author: unobe $
 # ex: set ts=8 sw=4 et
 #########################################################################
-package WWW::Facebook::API::Events;
+package WWW::Facebook::API::Marketplace;
 
 use warnings;
 use strict;
@@ -12,44 +12,105 @@ use Carp;
 
 use version; our $VERSION = qv('0.4.8');
 
-sub get         { return shift->base->call( 'events.get',        @_ ) }
-sub get_members { return shift->base->call( 'events.getMembers', @_ ) }
+sub get_categories {
+    return shift->base->call( 'marketplace.getCategories', @_ );
+}
+
+sub get_subcategories {
+    return shift->base->call( 'marketplace.getSubcategories', @_ );
+}
+
+sub get_listings {
+    return shift->base->call( 'marketplace.getListings', @_ );
+}
+
+sub search {
+    return shift->base->call( 'marketplace.search', @_ );
+}
+
+sub create_listing {
+    return shift->base->call( 'marketplace.createListing', @_ );
+}
+
+sub remove_listing {
+    return shift->base->call( 'marketplace.removeListing', @_ );
+}
 
 1;    # Magic true value required at end of module
+
 __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Events - Facebook Events
+WWW::Facebook::API::Marketplace - Facebook Marketplace
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Events version 0.4.8
+This document describes WWW::Facebook::API::Marketplace version 0.4.8
 
 =head1 SYNOPSIS
 
     use WWW::Facebook::API;
 
-
 =head1 DESCRIPTION
 
-Methods for accessing events with L<WWW::Facebook::API>
+Methods for accessing the marketplace with L<WWW::Facebook::API>
 
 =head1 SUBROUTINES/METHODS 
 
 =over
 
-=item get( uid => $uid, eids => [ ... ] )
+=item get_categories( %params )
 
-The events.get method of the Facebook API:
+The marketplace.getCategories method of the Facebook API:
 
-    $response = $client->events->get( uid => 234233, eids => [23,2343,54545] );
+    $categories = $client->marketplace->get_categories;
 
-=item get_members( eid => $event_id )
+=item get_subcategories( %params )
 
-The events.getMembers method of the Facebook API:
+The marketplace.getSubcategories method of the Facebook API:
 
-    $response = $client->events->get_members( eid => 233 );
+    $subcats = $client->marketplace->get_subcategories(
+        category => 'category',
+    );
+
+=item get_listings( %params )
+
+The marketplace.getListings method of the Facebook API:
+
+    $listings_response = $client->marketplace->get_listings(
+        listing_ids => [@listing_ids],
+        uids => [@uids],
+    );
+
+=item search( %params )
+
+The marketplace.search method of the Facebook API:
+
+    $response = $client->marketplace->search(
+        category => 'category',
+        subcategory => 'subcategory',
+        query => 'query',
+    );
+
+=item create_listing( %params )
+
+The marketplace.createListing method of the Facebook API:
+
+    $listing_id = $client->marketplace->create_listing(
+        listing_id => 0|existing_id,
+        show_on_profile => 0|1,
+        listing_attrs => 'JSON',
+    );
+
+=item remove_listing( %params )
+
+The marketplace.removeListing method of the Facebook API:
+
+    $success = $client->marketplace->remove_listing(
+        listing_id => 'id',
+        status => 'SUCCESS|NOT_SUCCESS|DEFAULT',
+    );
 
 =back
 
@@ -59,7 +120,7 @@ None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Events requires no configuration files or environment
+WWW::Facebook::API::Marketplace requires no configuration files or environment
 variables.
 
 =head1 DEPENDENCIES
@@ -82,14 +143,12 @@ L<http://rt.cpan.org>.
 
 David Romano  C<< <unobe@cpan.org> >>
 
-
 =head1 LICENSE AND COPYRIGHT
 
 Copyright (c) 2007, David Romano C<< <unobe@cpan.org> >>. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
-
 
 =head1 DISCLAIMER OF WARRANTY
 

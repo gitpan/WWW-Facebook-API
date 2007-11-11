@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.4');
+use version; our $VERSION = qv('0.4.8');
 
 sub get_fb_params {
     my $self = shift;
@@ -82,7 +82,7 @@ WWW::Facebook::API::Canvas - Facebook Canvas
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Canvas version 0.4.4
+This document describes WWW::Facebook::API::Canvas version 0.4.8
 
 =head1 SYNOPSIS
 
@@ -150,8 +150,8 @@ used.
 
 =item validate_sig( $q )
 
-Return a hash reference containing the fb_* params (with C<fb_> stripped) if
-the signature on the $q object is valid for this application (See
+Return a hash reference containing the fb_sig_* params (with C<fb_sig_>
+stripped) if the signature of the $q object is valid for this application (See
 L<DESCRIPTION>):
 
     $fb_params = $client->canvas->validate_sig( $q )

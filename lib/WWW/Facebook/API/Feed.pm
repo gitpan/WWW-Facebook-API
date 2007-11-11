@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.4');
+use version; our $VERSION = qv('0.4.8');
 
 sub publish_story_to_user {
     return shift->base->call( 'feed.publishStoryToUser', @_ );
@@ -18,6 +18,10 @@ sub publish_story_to_user {
 
 sub publish_action_of_user {
     return shift->base->call( 'feed.publishActionOfUser', @_ );
+}
+
+sub publish_templatized_action {
+    return shift->base->call( 'feed.publishTemplatizedAction', @_ );
 }
 
 1;    # Magic true value required at end of module
@@ -29,7 +33,7 @@ WWW::Facebook::API::Feed - Facebook Feeds
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Feed version 0.4.4
+This document describes WWW::Facebook::API::Feed version 0.4.8
 
 =head1 SYNOPSIS
 
@@ -48,10 +52,9 @@ Methods for accessing feeds with L<WWW::Facebook::API>
 The feed.publishStoryToUser method of the Facebook API. C<title> is the only
 parameter required.
 
-    $client->feed->publish_action_of_user(
+    $client->feed->publish_story_to_user(
         title           => 'title',
         body            => 'markup',
-        priority        => int rand(100),
         image_1         => 'image url',
         image_1_link    => 'destination url',
         image_2         => 'image url',
@@ -70,7 +73,6 @@ parameter required.
     $client->feed->publish_action_of_user(
         title           => 'title',
         body            => 'markup',
-        priority        => int rand(100),
         image_1         => 'image url',
         image_1_link    => 'destination url',
         image_2         => 'image url',
@@ -79,6 +81,28 @@ parameter required.
         image_3_link    => 'destination url',
         image_4         => 'image url',
         image_4_link    => 'destination url',
+    );
+
+=item publish_templatized_action( %params )
+
+The feed.publishTemplatizedAction method of the Facebook API. C<actor_id> and
+C<title_template> are required parameters.
+
+    $client->feed->publish_templatized_action(
+        actor_id        => 'user_id',
+        title_template  => 'markup',
+        title_data      => 'JSON',
+        body_general    => 'markup',
+        body_data       => 'JSON',
+        image_1         => 'image url',
+        image_1_link    => 'destination url',
+        image_2         => 'image url',
+        image_2_link    => 'destination url',
+        image_3         => 'image url',
+        image_3_link    => 'destination url',
+        image_4         => 'image url',
+        image_4_link    => 'destination url',
+        target_ids      => [@array_of_ids],
     );
 
 =back
