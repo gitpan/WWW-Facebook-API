@@ -1,10 +1,10 @@
 #######################################################################
-# $Date: 2007-05-28T14:18:18.679359Z $
-# $Revision: 1508 $
-# $Author: unobe $
+# $Date$
+# $Revision$
+# $Author$
 # ex: set ts=8 sw=4 et
 #########################################################################
-package WWW::Facebook::API::Marketplace;
+package WWW::Facebook::API::Data;
 
 use warnings;
 use strict;
@@ -12,41 +12,19 @@ use Carp;
 
 use version; our $VERSION = qv('0.4.11');
 
-sub get_categories {
-    return shift->base->call( 'marketplace.getCategories', @_ );
-}
-
-sub get_subcategories {
-    return shift->base->call( 'marketplace.getSubcategories', @_ );
-}
-
-sub get_listings {
-    return shift->base->call( 'marketplace.getListings', @_ );
-}
-
-sub search {
-    return shift->base->call( 'marketplace.search', @_ );
-}
-
-sub create_listing {
-    return shift->base->call( 'marketplace.createListing', @_ );
-}
-
-sub remove_listing {
-    return shift->base->call( 'marketplace.removeListing', @_ );
-}
+sub get_cookies { return shift->base->call( 'data.getCookies', @_ ); }
+sub set_cookie  { return shift->base->call( 'data.setCookie',  @_ ); }
 
 1;    # Magic true value required at end of module
-
 __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Marketplace - Facebook Marketplace
+WWW::Facebook::API::Data - Facebook Data
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Marketplace version 0.4.11
+This document describes WWW::Facebook::API::Data version 0.4.11
 
 =head1 SYNOPSIS
 
@@ -54,7 +32,7 @@ This document describes WWW::Facebook::API::Marketplace version 0.4.11
 
 =head1 DESCRIPTION
 
-Methods for accessing the marketplace with L<WWW::Facebook::API>
+Methods for accessing data with L<WWW::Facebook::API>
 
 =head1 SUBROUTINES/METHODS 
 
@@ -68,56 +46,25 @@ Returns the L<WWW::Facebook::API> base object.
 
 Constructor.
 
-=item get_categories()
+=item get_cookies
 
-The marketplace.getCategories method of the Facebook API:
+The data.getCookies method of the Facebook API:
 
-    $categories = $client->marketplace->get_categories;
-
-=item get_subcategories( category => 'category' )
-
-The marketplace.getSubcategories method of the Facebook API:
-
-    $subcats = $client->marketplace->get_subcategories(
-        category => 'category',
+    $cookies = $client->data->get_cookies(
+        uid => '467542',
+        name => 'foo',  # optional
     );
 
-=item get_listings( listing_ids => [@listing_ids], uids => [@uids] )
+=item set_cookie
 
-The marketplace.getListings method of the Facebook API:
+The data.setCookie method of the Facebook API:
 
-    $listings_response = $client->marketplace->get_listings(
-        listing_ids => [@listing_ids],
-        uids => [@uids],
-    );
-
-=item search( %params )
-
-The marketplace.search method of the Facebook API:
-
-    $response = $client->marketplace->search(
-        category => 'category',
-        subcategory => 'subcategory',
-        query => 'query',
-    );
-
-=item create_listing( %params )
-
-The marketplace.createListing method of the Facebook API:
-
-    $listing_id = $client->marketplace->create_listing(
-        listing_id => 0|existing_id,
-        show_on_profile => 0|1,
-        listing_attrs => 'JSON',
-    );
-
-=item remove_listing( listing_id => 'id', status => 'status' )
-
-The marketplace.removeListing method of the Facebook API:
-
-    $success = $client->marketplace->remove_listing(
-        listing_id => 'id',
-        status => 'SUCCESS|NOT_SUCCESS|DEFAULT',
+    $response = $client->data->set_cookie(
+        uid => '23423',
+        name => 'foo',
+        value => 'bar',
+        expires => 'epochtime', # optional
+        path => '/',            # optional
     );
 
 =back
@@ -128,7 +75,7 @@ None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Marketplace requires no configuration files or environment
+WWW::Facebook::API::Data requires no configuration files or environment
 variables.
 
 =head1 DEPENDENCIES

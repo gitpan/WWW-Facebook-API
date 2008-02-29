@@ -10,20 +10,21 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.10');
+use version; our $VERSION = qv('0.4.11');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
 use Digest::MD5 qw(md5_hex);
+use Encode qw(encode_utf8 is_utf8);
 use CGI;
 use CGI::Util qw(escape);
 
 our @namespaces = qw(
-    Auth            Canvas          Events
-    FBML            Feed            FQL
-    Friends         Groups          Notifications
-    Photos          Profile         Users
-    Marketplace     Pages
+    Auth            Canvas          Data
+    Events          FBML            Feed
+    FQL             Friends         Groups
+    Notifications   Photos          Profile
+    Users           Marketplace     Pages
 );
 
 for (@namespaces) {
@@ -414,8 +415,13 @@ sub _format_and_check_params {
 
     # reformat arrays and add each param to digest
     for ( keys %{$params} ) {
-        next unless ref $params->{$_} eq 'ARRAY';
-        $params->{$_} = join q{,}, @{ $params->{$_} };
+        if ( ref $params->{$_} eq 'ARRAY' ) {
+            $params->{$_} = join q{,}, @{ $params->{$_} };
+        }
+
+        if ( is_utf8( $params->{$_} ) ) {
+            $params->{$_} = encode_utf8( $params->{$_} );
+        }
     }
 
     croak '_format_and_check_params must be called in list context!'
@@ -504,7 +510,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.4.10
+This document describes WWW::Facebook::API version 0.4.11
 
 =head1 SYNOPSIS
 
@@ -642,6 +648,17 @@ Work with the canvas. See L<WWW::Facebook::API::Canvas>.
     $response = $client->canvas->in_fb_canvas( $q )
     $response = $client->canvas->in_frame( $q )
 
+=item data
+
+data namespace of the API (See L<WWW::Facebook::API::Data>).
+All method names from the Facebook API are lower_cased instead of CamelCase:
+
+    $response = $client->data->set_cookie( uid => 23, qw/name foo value bar/);
+    $cookies = $client->data->get_cookies(
+        uid => 4534,
+        name => 'foo',
+    );
+
 =item events
 
 events namespace of the API (See L<WWW::Facebook::API::Events>).
@@ -658,7 +675,7 @@ All method names from the Facebook API are lower_cased instead of CamelCase:
 
 =item fbml
 
-fbml namespace of the API (See L<WWW::Facebook::API::FBML>):
+fbml namespace of the API (See L<WWW::Facebook::API::FBML>).
 All method names from the Facebook API are lower_cased instead of CamelCase:
 
     $response = $client->fbml->set_ref_handle( handle => '', fbml => '');
@@ -705,6 +722,7 @@ All method names from the Facebook API are lower_cased instead of CamelCase:
     $response = $client->friends->get_app_users;
     $response
         = $client->friends->are_friends( uids1 => [1,5,8], uids2 => [2,3,4] );
+    $response = $client->friends->get_lists;
 
 =item groups
 
@@ -806,7 +824,11 @@ profile namespace of the API (See L<WWW::Facebook::API::Profile>).
 All method names from the Facebook API are lower_cased instead of CamelCase:
 
     $response = $client->profile->get_fbml( uid => 3 );
-    $response = $client->profile->set_fbml( uid => 5, markup => 'markup' );
+    $response = $client->profile->set_fbml( uid => 5,
+        profile => 'markup',
+        profile_action => 'markup',
+        mobile_profile => 'markup',
+    );
 
 =item users
 
@@ -1005,7 +1027,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.10".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.11".
 
 =back
 
@@ -1293,6 +1315,12 @@ process):
 
     use lib "path-to-perl5-libs";
 
+=item I'm getting the "Multiple values for %s" error from WFA::Canvas. Help?
+
+This usually means that your forms are using GET rather than POST to Facebook
+URLs. Change your forms to use POST and the problem should be resolved. (See
+RT#31620 and RT#31944 for more information).
+
 =back
 
 =head1 CONFIGURATION AND ENVIRONMENT
@@ -1340,11 +1368,12 @@ With live tests enabled, here is the current test coverage:
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
   File                           stmt   bran   cond    sub    pod   time  total
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
-  blib/lib/WWW/Facebook/API.pm   97.5   82.8   63.8   98.3  100.0   10.2   92.7
-  .../WWW/Facebook/API/Auth.pm   95.1   77.3  100.0   90.9  100.0   89.1   91.3
-  ...WW/Facebook/API/Canvas.pm   97.6   87.5  100.0  100.0  100.0    0.2   97.1
+  blib/lib/WWW/Facebook/API.pm   97.6   83.1   63.8   98.4  100.0    6.0   93.0
+  .../WWW/Facebook/API/Auth.pm   95.1   77.3  100.0   90.9  100.0   93.5   91.3
+  ...WW/Facebook/API/Canvas.pm   96.3   83.3   66.7  100.0  100.0    0.2   92.3
+  .../WWW/Facebook/API/Data.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...WW/Facebook/API/Events.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  .../WWW/Facebook/API/FBML.pm  100.0    n/a    n/a  100.0  100.0    0.1  100.0
+  .../WWW/Facebook/API/FBML.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...b/WWW/Facebook/API/FQL.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   .../WWW/Facebook/API/Feed.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...W/Facebook/API/Friends.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
@@ -1355,7 +1384,7 @@ With live tests enabled, here is the current test coverage:
   ...WW/Facebook/API/Photos.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...W/Facebook/API/Profile.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
   ...WWW/Facebook/API/Users.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  Total                          97.6   82.5   68.2   97.8  100.0  100.0   94.0
+  Total                          97.7   82.6   66.7   97.9  100.0  100.0   94.0
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 AUTHOR
@@ -1381,6 +1410,8 @@ Nick Gerakines C<< <nick@socklabs.com> >>
 Olaf Alders C<< <olaf@wundersolutions.com> >>
 
 Patrick Michael Kane C<< <pmk@wawd.com> >>
+
+Ryan D Johnson C<< ryan@innerfence.com >>
 
 Sean O'Rourke C<< <seano@cpan.org> >>
 

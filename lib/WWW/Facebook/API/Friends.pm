@@ -10,11 +10,12 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.10');
+use version; our $VERSION = qv('0.4.11');
 
 sub get           { return shift->base->call( 'friends.get',         @_ ) }
 sub get_app_users { return shift->base->call( 'friends.getAppUsers', @_ ) }
 sub are_friends   { return shift->base->call( 'friends.areFriends',  @_ ) }
+sub get_lists     { return shift->base->call( 'friends.getLists',    @_ ) }
 
 1;    # Magic true value required at end of module
 __END__
@@ -25,7 +26,7 @@ WWW::Facebook::API::Friends - Facebook Friends
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Friends version 0.4.10
+This document describes WWW::Facebook::API::Friends version 0.4.11
 
 =head1 SYNOPSIS
 
@@ -47,11 +48,12 @@ Returns the L<WWW::Facebook::API> base object.
 
 Constructor.
 
-=item get()
+=item get(flid => 'id')
 
 The friends.get method of the Facebook API:
 
-    $response = $client->friends->get;
+    $response = $client->friends->get();
+    $response = $client->friends->get(flid => '23432');
 
 =item get_app_users()
 
@@ -68,6 +70,12 @@ refs that make up an associative array:
         = $client->friends->are_friends( uids1 => [1,7,8], uids2 => [2,3,4] );
 
 See the Facebook API Documentation for more information.
+
+=item get_lists()
+
+The friends.getLists method of the Facebook API:
+
+    $response = $client->friends->get_lists;
 
 =back
 

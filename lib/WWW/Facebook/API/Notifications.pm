@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.10');
+use version; our $VERSION = qv('0.4.11');
 
 sub get  { return shift->base->call( 'notifications.get',  @_ ) }
 sub send { return shift->base->call( 'notifications.send', @_ ) } ## no critic
@@ -25,7 +25,7 @@ WWW::Facebook::API::Notifications - Facebook Notifications
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Notifications version 0.4.10
+This document describes WWW::Facebook::API::Notifications version 0.4.11
 
 =head1 SYNOPSIS
 
@@ -66,7 +66,7 @@ The notifications.send method of the Facebook API:
 
 The notifications.sendEmail method of the Facebook API:
 
-    $response = $client->notifications->send_request(
+    $response = $client->notifications->send_email(
         recipients => [1, 2343, 445],
         subject => 'subject',
         text => 'text version of email body',
