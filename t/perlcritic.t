@@ -6,8 +6,8 @@
 #########################################################################
 use Test::More;
 BEGIN {
-    if (! $ENV{'AUTHOR_TESTS'} ) {
-        plan( skip_all => 'Skipping author tests' );
+    if (! $ENV{'PERL_TEST_CRITIC'} ) {
+        plan( skip_all => 'Skipping Perl::Critic tests' );
         exit;
     }
     eval q{require Test::Perl::Critic};

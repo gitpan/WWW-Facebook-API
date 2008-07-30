@@ -10,7 +10,10 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.11');
+use version; our $VERSION = qv('0.4.12');
+
+use Readonly;
+Readonly my $DEFAULT_SLEEP => 15;
 
 sub create_token {
     my $self = shift;
@@ -87,7 +90,7 @@ sub login {
     system qq($browser "$url");
 
     # Give the user time to log in
-    $args{'sleep'} ||= 15;
+    $args{'sleep'} ||= $DEFAULT_SLEEP;
     sleep $args{'sleep'};
 
     return $token;
@@ -123,7 +126,7 @@ WWW::Facebook::API::Auth - Facebook Authentication
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Auth version 0.4.11
+This document describes WWW::Facebook::API::Auth version 0.4.12
 
 =head1 SYNOPSIS
 

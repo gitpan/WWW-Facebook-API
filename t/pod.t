@@ -6,8 +6,8 @@
 #########################################################################
 
 use Test::More;
-if (!$ENV{'AUTHOR_TESTS'}) {
-    plan skip_all => "Skipping author tests";
+if (!$ENV{'PERL_TEST_POD'}) {
+    plan skip_all => "Skipping Test::Pod tests";
     exit;
 }
 

@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.11');
+use version; our $VERSION = qv('0.4.12');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -31,7 +31,7 @@ for (@namespaces) {
     my $package = __PACKAGE__ . "::$_";
     my $name    = "\L$_";
     ## no critic
-    eval qq(
+    my $namespace = eval qq(
         use $package;
 
         sub $name {
@@ -53,9 +53,10 @@ for (@namespaces) {
 
             return \$self;
         };
+        1;
 
     );
-    croak "Cannot create namespace $name: $@\n" if $@;
+    croak "Cannot create namespace $name: $@\n" if not $namespace;
 }
 
 our %attributes = (
@@ -80,15 +81,16 @@ our %attributes = (
 
 for ( keys %attributes ) {
     ## no critic
-    eval qq( 
+    my $attribute = eval qq( 
         sub $_ {
             my \$self = shift;
             return \$self->{$_} = shift if defined \$_[0];
             return \$self->{$_} if defined \$self->{$_};
             return \$self->{$_} = '$attributes{$_}';
         }
+        1;
     );
-    croak "Cannot create attribute $_: $@\n" if $@;
+    croak "Cannot create attribute $_: $@\n" if not $attribute;
 }
 
 sub _set_from_outside {
@@ -123,7 +125,7 @@ sub _set_from_file {
         carp "Config line: $_" if $self->{'debug'};
         chomp;
         my ( $key, $val ) = split m/=/xms, $_, 2;
-        next                              if !$key;
+        next if !$key;
         carp "Key/Val pair: $key -> $val" if $self->{'debug'};
         for ( $key, $val ) {
             s/\A\s+//xms;
@@ -353,8 +355,7 @@ sub _add_url_params {
 sub _parser {
     my $parser = JSON::Any->new;
 
-    # JSON::Any needs to get fixed
-    $parser->handler->allow_nonref() if $parser->handlerType eq 'JSON::XS';
+    $parser->handler->allow_nonref;
     return $parser;
 }
 
@@ -367,16 +368,15 @@ sub _parse {
     return 0   if $response =~ /\A"?false"?\Z/xms;
 
     my $parser;
-    eval { $parser = _parser() };
+    eval { $parser = _parser(); 1; } or do {
 
-    # Only load JSON::Any if we haven't already.  Lets the developers
-    # pick their choice of JSON modules (JSON::DWIW, for example)
-    if ($@) {    ## no critic
+        # Only load JSON::Any if we haven't already.  Lets the developers
+        # pick their choice of JSON modules (JSON::DWIW, for example)
         ## no critic
         eval q{use JSON::Any};
         croak "Unable to load JSON module for parsing:$@\n" if $@;
         $parser = _parser();
-    }
+    };
     carp 'JSON::Any is parsing with ' . $parser->handlerType if $self->debug;
 
     return $parser->decode($response);
@@ -510,7 +510,7 @@ WWW::Facebook::API - Facebook API implementation
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API version 0.4.11
+This document describes WWW::Facebook::API version 0.4.12
 
 =head1 SYNOPSIS
 
@@ -1027,7 +1027,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.11".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.12".
 
 =back
 
@@ -1350,7 +1350,7 @@ L<http://rt.cpan.org>.
 
 =head1 SOURCE REPOSITORY
 
-http://code.google.com/p/perl-www-facebook-api/
+http://github.com/unobe/perl-wfa/tree/master
 
 =head1 TESTING
 
@@ -1363,29 +1363,8 @@ environment variables are set:
 Additionally, if your app is a desktop one, you must set C<WFA_DESKTOP_TEST>.
 Also, the session key must be valid for the API key being used.
 
-With live tests enabled, here is the current test coverage:
-
-  ---------------------------- ------ ------ ------ ------ ------ ------ ------
-  File                           stmt   bran   cond    sub    pod   time  total
-  ---------------------------- ------ ------ ------ ------ ------ ------ ------
-  blib/lib/WWW/Facebook/API.pm   97.6   83.1   63.8   98.4  100.0    6.0   93.0
-  .../WWW/Facebook/API/Auth.pm   95.1   77.3  100.0   90.9  100.0   93.5   91.3
-  ...WW/Facebook/API/Canvas.pm   96.3   83.3   66.7  100.0  100.0    0.2   92.3
-  .../WWW/Facebook/API/Data.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  ...WW/Facebook/API/Events.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  .../WWW/Facebook/API/FBML.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  ...b/WWW/Facebook/API/FQL.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  .../WWW/Facebook/API/Feed.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  ...W/Facebook/API/Friends.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  ...WW/Facebook/API/Groups.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  ...cebook/API/Marketplace.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  ...book/API/Notifications.pm   86.7    n/a    n/a   71.4  100.0    0.0   84.0
-  ...WWW/Facebook/API/Pages.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  ...WW/Facebook/API/Photos.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  ...W/Facebook/API/Profile.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  ...WWW/Facebook/API/Users.pm  100.0    n/a    n/a  100.0  100.0    0.0  100.0
-  Total                          97.7   82.6   66.7   97.9  100.0  100.0   94.0
-  ---------------------------- ------ ------ ------ ------ ------ ------ ------
+To enable POD coverage and POD formattings tests, set C<PERL_TEST_POD> to
+true. To enable L<Perl::Critic> tests, set C<_PERL_TEST_CRITIC> to true.
 
 =head1 AUTHOR
 

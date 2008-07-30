@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.11');
+use version; our $VERSION = qv('0.4.12');
 
 sub get_info { return shift->base->call( 'users.getInfo', @_ ); }
 
@@ -23,7 +23,13 @@ sub has_app_permission {
 }
 
 sub is_app_added {
-    return shift->base->call( 'users.isAppAdded', @_ );
+    my $self = shift;
+    carp 'is_app_added is deprecated' if $self->base->debug;
+    return $self->base->call( 'users.isAppAdded', @_ );
+}
+
+sub is_app_user {
+    return shift->base->call( 'users.isAppUser', @_ );
 }
 
 sub set_status {
@@ -39,7 +45,7 @@ WWW::Facebook::API::Users - Facebook Users
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Users version 0.4.11
+This document describes WWW::Facebook::API::Users version 0.4.12
 
 =head1 SYNOPSIS
 
@@ -88,11 +94,12 @@ The users.hasAppPermission method of the Facebook API:
         ext_perm => 'status_update|photo_upload'
     );
 
-=item is_app_added
+=item is_app_user
 
-The users.isAppAdded method of the Facebook API:
+The users.isAppUser method of the Facebook API:
 
-    $app_added = $client->users->is_app_added;
+    $app_added = $client->users->is_app_user;
+
 
 =item set_status
 
@@ -102,6 +109,18 @@ The users.setStatus method of the Facebook API:
         status => 'status message',
         clear => 1|0,
     );
+
+=back
+
+=head1 DEPRECATED SUBROUTINES/METHODS
+
+=over
+
+=item is_app_added
+
+The users.isAppAdded method of the Facebook API:
+
+    $app_added = $client->users->is_app_added;
 
 =back
 

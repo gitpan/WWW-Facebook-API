@@ -1,9 +1,11 @@
 --- #YAML:1.0
 name:                WWW-Facebook-API
-version:             v0.4.11
+version:             0.4.12
 abstract:            Facebook API implementation
 license:             perl
-generated_by:        ExtUtils::MakeMaker version 6.32
+author:              
+    - David Romano <unobe@cpan.org>
+generated_by:        ExtUtils::MakeMaker version 6.42
 distribution_type:   module
 requires:     
     Crypt::SSLeay:                 0
@@ -13,7 +15,5 @@ requires:
     Time::HiRes:                   0
     version:                       0
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
-    version: 1.2
-author:
-    - David Romano <unobe@cpan.org>
+    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
+    version: 1.3

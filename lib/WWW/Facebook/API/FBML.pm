@@ -4,11 +4,15 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.11');
+use version; our $VERSION = qv('0.4.12');
 
 sub refresh_img_src { return shift->base->call( 'fbml.refreshImgSrc', @_ ) }
 sub refresh_ref_url { return shift->base->call( 'fbml.refreshRefUrl', @_ ) }
 sub set_ref_handle  { return shift->base->call( 'fbml.setRefHandle',  @_ ) }
+
+sub upload_native_strings {
+    return shift->base->call( 'fbml.uploadNativeStrings', @_ );
+}
 
 1;    # Magic true value required at end of module
 __END__
@@ -19,7 +23,7 @@ WWW::Facebook::API::FBML - Facebook Markup Language
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::FBML version 0.4.11
+This document describes WWW::Facebook::API::FBML version 0.4.12
 
 =head1 SYNOPSIS
 
@@ -56,6 +60,18 @@ http://wiki.developers.facebook.com/index.php/Changing_profile_content
 
 Have Facebook call the given URL to generate the FBML. See this page on the
 wiki: http://wiki.developers.facebook.com/index.php/Changing_profile_content
+
+=item upload_native_strings ( %params )
+
+The fbml.uploadNativeStrings method of the Facebook API. C<native_strings> is the only
+parameter required.
+
+	$client->fbml->upload_native_strings(
+							native_strings => 'JSON'
+	);
+
+The format for C<native_strings> is described on the developers wiki:
+http://wiki.developers.facebook.com/index.php/Fbml.uploadNativeStrings
 
 =back
 
