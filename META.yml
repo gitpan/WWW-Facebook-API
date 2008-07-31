@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                WWW-Facebook-API
-version:             0.4.12
+version:             0.4.13
 abstract:            Facebook API implementation
 license:             perl
 author:              
@@ -12,6 +12,7 @@ requires:
     Digest::MD5:                   0
     JSON::Any:                     0
     LWP::UserAgent:                0
+    Readonly:                      0
     Time::HiRes:                   0
     version:                       0
 meta-spec:
