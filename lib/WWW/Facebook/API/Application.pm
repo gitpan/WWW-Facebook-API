@@ -1,10 +1,4 @@
-#######################################################################
-# $Date$
-# $Revision$
-# $Author$
-# ex: set ts=8 sw=4 et
-#########################################################################
-package WWW::Facebook::API::Friends;
+package WWW::Facebook::API::Application;
 
 use warnings;
 use strict;
@@ -12,21 +6,20 @@ use Carp;
 
 use version; our $VERSION = qv('0.4.14');
 
-sub get           { return shift->base->call( 'friends.get',         @_ ) }
-sub get_app_users { return shift->base->call( 'friends.getAppUsers', @_ ) }
-sub are_friends   { return shift->base->call( 'friends.areFriends',  @_ ) }
-sub get_lists     { return shift->base->call( 'friends.getLists',    @_ ) }
+sub get_public_info {
+    return shift->base->call( 'Application.getPublicInfo', @_ );
+}
 
 1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Friends - Facebook Friends
+WWW::Facebook::API::Application - Facebook Application
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Friends version 0.4.14
+This document describes WWW::Facebook::API::Application version 0.4.14
 
 =head1 SYNOPSIS
 
@@ -34,48 +27,22 @@ This document describes WWW::Facebook::API::Friends version 0.4.14
 
 =head1 DESCRIPTION
 
-Methods for accessing friends with L<WWW::Facebook::API>
+Methods for accessing application info with L<WWW::Facebook::API>
 
 =head1 SUBROUTINES/METHODS 
 
 =over
 
-=item base
+=item get_public_info( %params )
 
-Returns the L<WWW::Facebook::API> base object.
+The Application.getPublicInfo method of the Facebook API. 
 
-=item new
-
-Constructor.
-
-=item get(flid => 'id')
-
-The friends.get method of the Facebook API:
-
-    $response = $client->friends->get();
-    $response = $client->friends->get(flid => '23432');
-
-=item get_app_users()
-
-The friends.getAppUsers method of the Facebook API:
-
-    $response = $client->friends->get_app_users;
-
-=item are_friends( uids1 => [ ... ], uids2 => [ ... ] )
-
-The friends.areFriends method of the Facebook API. The two arguments are array
-refs that make up an associative array:
-
-    $response
-        = $client->friends->are_friends( uids1 => [1,7,8], uids2 => [2,3,4] );
-
-See the Facebook API Documentation for more information.
-
-=item get_lists()
-
-The friends.getLists method of the Facebook API:
-
-    $response = $client->friends->get_lists;
+    $info = $client->application->get_public_info(
+      application_id => 1234 );
+    $info = $client->application->get_public_info(
+      application_api_key => 1234 );
+    $info = $client->application->get_public_info(
+      application_canvas_name => 'app_path' );
 
 =back
 
@@ -85,7 +52,7 @@ None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Friends requires no configuration files or environment
+WWW::Facebook::API::Application requires no configuration files or environment
 variables.
 
 =head1 DEPENDENCIES
@@ -107,6 +74,8 @@ L<http://rt.cpan.org>.
 =head1 AUTHOR
 
 David Romano  C<< <unobe@cpan.org> >>
+
+Thomas Burke  C<< <tburke@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 

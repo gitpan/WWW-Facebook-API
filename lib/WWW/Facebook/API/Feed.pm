@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.13');
+use version; our $VERSION = qv('0.4.14');
 
 sub publish_user_action {
     return shift->base->call( 'feed.publishUserAction', @_ );
@@ -26,7 +26,7 @@ sub deactivate_template_bundle {
 
 sub get_registered_template_bundle {
     my $method =
-        @_
+        @_ > 1 
         ? 'feed.getRegisteredTemplateBundleById'
         : 'feed.getRegisteredTemplateBundles';
 
@@ -58,7 +58,7 @@ WWW::Facebook::API::Feed - Facebook Feeds
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Feed version 0.4.13
+This document describes WWW::Facebook::API::Feed version 0.4.14
 
 =head1 SYNOPSIS
 
@@ -107,7 +107,7 @@ The feed.registerTemplateBundle method of the Facebook API. C<one_line_story_tem
 parameter required.
 
 
-    $client->feed->publish_user_action(
+    $client->feed->register_template_bundle(
         one_line_story_templates => 'JSON',
         short_story_templates    => 'JSON',
         full_story_template      => 'JSON',

@@ -1,10 +1,4 @@
-#######################################################################
-# $Date$
-# $Revision$
-# $Author$
-# ex: set ts=8 sw=4 et
-#########################################################################
-package WWW::Facebook::API::Friends;
+package WWW::Facebook::API::SMS;
 
 use warnings;
 use strict;
@@ -12,21 +6,24 @@ use Carp;
 
 use version; our $VERSION = qv('0.4.14');
 
-sub get           { return shift->base->call( 'friends.get',         @_ ) }
-sub get_app_users { return shift->base->call( 'friends.getAppUsers', @_ ) }
-sub are_friends   { return shift->base->call( 'friends.areFriends',  @_ ) }
-sub get_lists     { return shift->base->call( 'friends.getLists',    @_ ) }
+sub can_send {
+    return shift->base->call( 'sms.canSend', @_ );
+}
+
+sub send {
+    return shift->base->call( 'sms.send', @_ );
+}
 
 1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
 
-WWW::Facebook::API::Friends - Facebook Friends
+WWW::Facebook::API::SMS - Facebook SMS
 
 =head1 VERSION
 
-This document describes WWW::Facebook::API::Friends version 0.4.14
+This document describes WWW::Facebook::API::SMS version 0.4.14
 
 =head1 SYNOPSIS
 
@@ -34,48 +31,30 @@ This document describes WWW::Facebook::API::Friends version 0.4.14
 
 =head1 DESCRIPTION
 
-Methods for accessing friends with L<WWW::Facebook::API>
+Methods for accessing sms with L<WWW::Facebook::API>
 
 =head1 SUBROUTINES/METHODS 
 
 =over
 
-=item base
+=item can_send( %params )
 
-Returns the L<WWW::Facebook::API> base object.
+The sms.canSend method of the Facebook API. 
 
-=item new
+    $client->sms->can_send(
+        uid           => bigint uid,
+    );
 
-Constructor.
+=item send( %params )
 
-=item get(flid => 'id')
+The sms.send method of the Facebook API. 
 
-The friends.get method of the Facebook API:
-
-    $response = $client->friends->get();
-    $response = $client->friends->get(flid => '23432');
-
-=item get_app_users()
-
-The friends.getAppUsers method of the Facebook API:
-
-    $response = $client->friends->get_app_users;
-
-=item are_friends( uids1 => [ ... ], uids2 => [ ... ] )
-
-The friends.areFriends method of the Facebook API. The two arguments are array
-refs that make up an associative array:
-
-    $response
-        = $client->friends->are_friends( uids1 => [1,7,8], uids2 => [2,3,4] );
-
-See the Facebook API Documentation for more information.
-
-=item get_lists()
-
-The friends.getLists method of the Facebook API:
-
-    $response = $client->friends->get_lists;
+    $client->sms->send(
+        uid           => bigint uid,
+        message       => 'message',
+        session_id    => i32,
+        req_session   => bool,
+    );
 
 =back
 
@@ -85,7 +64,7 @@ None.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-WWW::Facebook::API::Friends requires no configuration files or environment
+WWW::Facebook::API::SMS requires no configuration files or environment
 variables.
 
 =head1 DEPENDENCIES
@@ -108,9 +87,11 @@ L<http://rt.cpan.org>.
 
 David Romano  C<< <unobe@cpan.org> >>
 
+Thomas Burke  C<< <tburke@cpan.org> >>
+
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2007, David Romano C<< <unobe@cpan.org> >>. All rights reserved.
+Copyright (c) 2008, David Romano C<< <unobe@cpan.org> >>. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
