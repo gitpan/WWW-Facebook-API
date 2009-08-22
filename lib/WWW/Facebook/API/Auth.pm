@@ -1,7 +1,4 @@
 #######################################################################
-# $Date$
-# $Revision$
-# $Author$
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Auth;
@@ -9,8 +6,6 @@ package WWW::Facebook::API::Auth;
 use warnings;
 use strict;
 use Carp;
-
-use version; our $VERSION = qv('0.4.14');
 
 use Readonly;
 Readonly my $DEFAULT_SLEEP => 15;
@@ -96,6 +91,26 @@ sub login {
     return $token;
 }
 
+sub expire_session {
+    my $self = shift;
+    return $self->base->call('auth.expireSession',
+            session_key => $self->base->session_key, @_);
+}
+
+sub promote_session {
+    my $self = shift;
+    return $self->base->call( 'auth.promoteSession',
+            session_key => $self->base->session_key, @_ );
+}
+
+sub revoke_authorization {
+    return shift->base->call( 'auth.revokeAuthorization', @_ );
+}
+
+sub revoke_extended_permission {
+    return shift->base->call( 'auth.revokeExtendedPermission', @_ );
+}
+
 sub logout {
     my $self = shift;
     $self->base->ua->post( 'http://www.facebook.com/logout.php',
@@ -123,10 +138,6 @@ __END__
 =head1 NAME
 
 WWW::Facebook::API::Auth - Facebook Authentication
-
-=head1 VERSION
-
-This document describes WWW::Facebook::API::Auth version 0.4.14
 
 =head1 SYNOPSIS
 
@@ -182,6 +193,33 @@ the command to execute, e.g.:
 After the browser is called, it will pause for C<$sleep> seconds (or 15
 seconds if C<$sleep> is not defined), to give the user time to log in. The
 method returns the session token created by C<create_token>.
+
+=item expire_session( %params)
+
+Implementation of the auth.expireSession function.
+
+    $result = $client->auth->expire_session();
+
+=item promote_session( %params)
+
+Implementation of the auth.promoteSession function.
+
+    $result = $client->auth->promote_session();
+
+=item revoke_authorization( %params)
+
+Implementation of the auth.revokeAuthorization function.
+
+    $result = $client->auth->revoke_authorization();
+
+=item revoke_extended_permission( %params)
+
+Implementation of the auth.revokeExtendedPermission function.
+
+    $result = $client->auth->revoke_extended_permission(
+                    perm => 'email',
+                    uid  => $uid
+    );
 
 =item logout()
 

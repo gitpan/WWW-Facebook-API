@@ -1,7 +1,4 @@
 #######################################################################
-# $Date$
-# $Revision$
-# $Author$
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Users;
@@ -9,8 +6,6 @@ package WWW::Facebook::API::Users;
 use warnings;
 use strict;
 use Carp;
-
-use version; our $VERSION = qv('0.4.14');
 
 sub get_info { return shift->base->call( 'users.getInfo', @_ ); }
 
@@ -22,12 +17,6 @@ sub has_app_permission {
     return shift->base->call( 'users.hasAppPermission', @_ );
 }
 
-sub is_app_added {
-    my $self = shift;
-    carp 'is_app_added is deprecated' if $self->base->debug;
-    return $self->base->call( 'users.isAppAdded', @_ );
-}
-
 sub is_app_user {
     return shift->base->call( 'users.isAppUser', @_ );
 }
@@ -36,16 +25,16 @@ sub set_status {
     return shift->base->call( 'users.setStatus', @_ );
 }
 
+sub is_verified {
+    return shift->base->call( 'users.isVerified', @_ );
+}
+
 1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
 
 WWW::Facebook::API::Users - Facebook Users
-
-=head1 VERSION
-
-This document describes WWW::Facebook::API::Users version 0.4.14
 
 =head1 SYNOPSIS
 
@@ -110,17 +99,12 @@ The users.setStatus method of the Facebook API:
         clear => 1|0,
     );
 
-=back
+=item is_verified
 
-=head1 DEPRECATED SUBROUTINES/METHODS
+The users.isVerified method of the Facebook API:
 
-=over
+    $verified = $client->users->is_verified;
 
-=item is_app_added
-
-The users.isAppAdded method of the Facebook API:
-
-    $app_added = $client->users->is_app_added;
 
 =back
 

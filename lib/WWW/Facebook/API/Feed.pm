@@ -1,7 +1,4 @@
 #######################################################################
-# $Date: 2007-05-28T14:18:18.679359Z $
-# $Revision: 1508 $
-# $Author: unobe $
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Feed;
@@ -9,8 +6,6 @@ package WWW::Facebook::API::Feed;
 use warnings;
 use strict;
 use Carp;
-
-use version; our $VERSION = qv('0.4.14');
 
 sub publish_user_action {
     return shift->base->call( 'feed.publishUserAction', @_ );
@@ -26,23 +21,11 @@ sub deactivate_template_bundle {
 
 sub get_registered_template_bundle {
     my $method =
-        @_ > 1 
+        @_ > 1
         ? 'feed.getRegisteredTemplateBundleById'
         : 'feed.getRegisteredTemplateBundles';
 
     return shift->base->call( $method, @_ );
-}
-
-sub publish_story_to_user {
-    my $self = shift;
-    carp 'publish_story_to_user is deprecated' if $self->base->debug;
-    return $self->base->call( 'feed.publishStoryToUser', @_ );
-}
-
-sub publish_action_of_user {
-    my $self = shift;
-    carp 'publish_action_of_user is deprecated' if $self->base->debug;
-    return $self->base->call( 'feed.publishActionOfUser', @_ );
 }
 
 sub publish_templatized_action {
@@ -55,10 +38,6 @@ __END__
 =head1 NAME
 
 WWW::Facebook::API::Feed - Facebook Feeds
-
-=head1 VERSION
-
-This document describes WWW::Facebook::API::Feed version 0.4.14
 
 =head1 SYNOPSIS
 
@@ -85,8 +64,8 @@ Constructor.
 =item publish_user_action( %params )
 
 
-The feed.publishUserAction method of the Facebook API. C<template_bundle_id> is the only
-parameter required.
+The feed.publishUserAction method of the Facebook API. C<template_bundle_id>
+and C<template_data> are the only parameters required.
 
 
     $client->feed->publish_user_action(
@@ -119,8 +98,8 @@ http://wiki.developers.facebook.com/index.php/Feed.registerTemplateBundle
 
 =item deactivate_template_bundle( %params )
 
-The feed.deactivateTemplateBundle method of the Facebook API. C<template_bundle_id> is the only
-parameter required.
+The feed.deactivateTemplateBundleById method of the Facebook API.
+C<template_bundle_id> is the only parameter required.
 
 
     $client->feed->deactivate_template_bundle(
@@ -158,49 +137,6 @@ C<title_template> are required parameters.
         image_4         => 'image url',
         image_4_link    => 'destination url',
         target_ids      => [@array_of_ids],
-    );
-
-=back
-
-=head1 DEPRECATED SUBROUTINES/METHODS
-
-=over
-
-=item publish_story_to_user( %params )
-
-The feed.publishStoryToUser method of the Facebook API. C<title> is the only
-parameter required.
-
-    $client->feed->publish_story_to_user(
-        title           => 'title',
-        body            => 'markup',
-        image_1         => 'image url',
-        image_1_link    => 'destination url',
-        image_2         => 'image url',
-        image_2_link    => 'destination url',
-        image_3         => 'image url',
-        image_3_link    => 'destination url',
-        image_4         => 'image url',
-        image_4_link    => 'destination url',
-        priority        => '100',
-    );
-
-=item publish_action_of_user( %params )
-
-The feed.publishActionOfUser method of the Facebook API. C<title> is the only
-parameter required.
-
-    $client->feed->publish_action_of_user(
-        title           => 'title',
-        body            => 'markup',
-        image_1         => 'image url',
-        image_1_link    => 'destination url',
-        image_2         => 'image url',
-        image_2_link    => 'destination url',
-        image_3         => 'image url',
-        image_3_link    => 'destination url',
-        image_4         => 'image url',
-        image_4_link    => 'destination url',
     );
 
 =back

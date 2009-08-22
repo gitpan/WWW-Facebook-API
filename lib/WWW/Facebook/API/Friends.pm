@@ -1,7 +1,4 @@
 #######################################################################
-# $Date$
-# $Revision$
-# $Author$
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Friends;
@@ -10,12 +7,11 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.14');
-
 sub get           { return shift->base->call( 'friends.get',         @_ ) }
 sub get_app_users { return shift->base->call( 'friends.getAppUsers', @_ ) }
 sub are_friends   { return shift->base->call( 'friends.areFriends',  @_ ) }
 sub get_lists     { return shift->base->call( 'friends.getLists',    @_ ) }
+sub get_mutual_friends { return shift->base->call( 'friends.getMutualFriends',    @_ ) }
 
 1;    # Magic true value required at end of module
 __END__
@@ -23,10 +19,6 @@ __END__
 =head1 NAME
 
 WWW::Facebook::API::Friends - Facebook Friends
-
-=head1 VERSION
-
-This document describes WWW::Facebook::API::Friends version 0.4.14
 
 =head1 SYNOPSIS
 
@@ -76,6 +68,15 @@ See the Facebook API Documentation for more information.
 The friends.getLists method of the Facebook API:
 
     $response = $client->friends->get_lists;
+
+=item get_mutual_friends( %params )
+
+The friends.getMutualFriends method of the Facebook API:
+
+    $response = $client->friends->get_mutual_friends(
+        target_uid => $target_uid,
+        source_uid => $source_uid,
+    );
 
 =back
 

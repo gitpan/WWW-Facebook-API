@@ -1,16 +1,17 @@
+#######################################################################
+# ex: set ts=8 sw=4 et
+#########################################################################
 package WWW::Facebook::API::SMS;
 
 use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.14');
-
 sub can_send {
     return shift->base->call( 'sms.canSend', @_ );
 }
 
-sub send {
+sub send { ## no critic
     return shift->base->call( 'sms.send', @_ );
 }
 
@@ -20,10 +21,6 @@ __END__
 =head1 NAME
 
 WWW::Facebook::API::SMS - Facebook SMS
-
-=head1 VERSION
-
-This document describes WWW::Facebook::API::SMS version 0.4.14
 
 =head1 SYNOPSIS
 
@@ -36,6 +33,14 @@ Methods for accessing sms with L<WWW::Facebook::API>
 =head1 SUBROUTINES/METHODS 
 
 =over
+
+=item base
+
+Returns the L<WWW::Facebook::API> base object.
+
+=item new
+
+Constructor.
 
 =item can_send( %params )
 
@@ -85,9 +90,9 @@ L<http://rt.cpan.org>.
 
 =head1 AUTHOR
 
-David Romano  C<< <unobe@cpan.org> >>
-
 Thomas Burke  C<< <tburke@cpan.org> >>
+
+David Romano  C<< <unobe@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 

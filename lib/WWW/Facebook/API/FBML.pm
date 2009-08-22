@@ -1,11 +1,15 @@
+#######################################################################
+# ex: set ts=8 sw=4 et
+#########################################################################
 package WWW::Facebook::API::FBML;
 
 use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.14');
-
+sub delete_custom_tags { return shift->base->call( 'fbml.deleteCustomTags', @_ ) }
+sub get_custom_tags { return shift->base->call( 'fbml.getCustomTags', @_ ) }
+sub register_custom_tags { return shift->base->call( 'fbml.registerCustomTags', @_ ) }
 sub refresh_img_src { return shift->base->call( 'fbml.refreshImgSrc', @_ ) }
 sub refresh_ref_url { return shift->base->call( 'fbml.refreshRefUrl', @_ ) }
 sub set_ref_handle  { return shift->base->call( 'fbml.setRefHandle',  @_ ) }
@@ -20,10 +24,6 @@ __END__
 =head1 NAME
 
 WWW::Facebook::API::FBML - Facebook Markup Language
-
-=head1 VERSION
-
-This document describes WWW::Facebook::API::FBML version 0.4.14
 
 =head1 SYNOPSIS
 
@@ -44,6 +44,18 @@ Returns the L<WWW::Facebook::API> base object.
 =item new
 
 Constructor.
+
+=item delete_custom_tags( names => [@tag_names] )
+
+The fbml.deleteCustomTags method of the Facebook API.
+
+=item get_custom_tags( app_id => $id )
+
+The fbml.getCustomTags method of the Facebook API.
+
+=item register_custom_tags( tags => [@json_tags] )
+
+The fbml.registerCustomTags method of the Facebook API. 
 
 =item set_ref_handle( handle => 'handleName', fbml => 'fbml' )
 

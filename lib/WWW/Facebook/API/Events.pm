@@ -1,7 +1,4 @@
 #######################################################################
-# $Date$
-# $Revision$
-# $Author$
 # ex: set ts=8 sw=4 et
 #########################################################################
 package WWW::Facebook::API::Events;
@@ -10,8 +7,10 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.14');
-
+sub cancel      { return shift->base->call( 'events.cancel',     @_ ) }
+sub create      { return shift->base->call( 'events.create',     @_ ) }
+sub edit        { return shift->base->call( 'events.edit',       @_ ) }
+sub rsvp        { return shift->base->call( 'events.rsvp',       @_ ) }
 sub get         { return shift->base->call( 'events.get',        @_ ) }
 sub get_members { return shift->base->call( 'events.getMembers', @_ ) }
 
@@ -21,10 +20,6 @@ __END__
 =head1 NAME
 
 WWW::Facebook::API::Events - Facebook Events
-
-=head1 VERSION
-
-This document describes WWW::Facebook::API::Events version 0.4.14
 
 =head1 SYNOPSIS
 
@@ -46,6 +41,43 @@ Returns the L<WWW::Facebook::API> base object.
 =item new
 
 Constructor.
+
+=item cancel( %params )
+
+The events.cancel method of the Facebook API:
+
+    $response = $client->events->cancel(
+        eid => $eid,
+        cancel_message => $message,
+    );
+
+=item create( %params )
+
+The events.create method of the Facebook API:
+
+    $response = $client->events->create(
+        event_info => $json,
+        data => $RAW_DATA,
+    );
+
+=item edit( %params )
+
+The events.edit method of the Facebook API:
+
+    $response = $client->events->edit(
+        eid => $eid,
+        event_info => $json,
+        data => $RAW_DATA,
+    );
+
+=item rsvp( %params )
+
+The events.rsvp method of the Facebook API:
+
+    $response = $client->events->rsvp(
+        eid => $eid,
+        rsvp_status => 'attending|unsure|declined|not_replied',
+    );
 
 =item get( %params )
 
