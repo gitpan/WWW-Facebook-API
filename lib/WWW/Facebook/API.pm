@@ -7,7 +7,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.15');
+use version; our $VERSION = qv('0.4.16');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -15,6 +15,8 @@ use Digest::MD5 qw(md5_hex);
 use Encode qw(encode_utf8 is_utf8);
 use CGI;
 use CGI::Util qw(escape);
+
+use WWW::Facebook::API::Exception;
 
 our @namespaces = qw(
     Admin           Application     Auth
@@ -216,8 +218,9 @@ sub call {
     carp $self->log_string( $params, $response ) if $self->debug;
     if ( $self->_has_error_response($response) ) {
         if ( $self->throw_errors ) {
-            confess "Error during REST $method call:",
-                $self->log_string( $params, $response );
+            warn WWW::Facebook::API::Exception->new(
+                $method, $params, $response
+            );
         }
     }
 
