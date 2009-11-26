@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               WWW-Facebook-API
-version:            0.4.16
+version:            0.4.17
 abstract:           Facebook API implementation
 author:
     - David Romano <unobe@cpan.org>

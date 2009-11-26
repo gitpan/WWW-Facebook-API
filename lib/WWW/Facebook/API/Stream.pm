@@ -28,7 +28,16 @@ sub get_filters {
 }
 
 sub publish {
-    return shift->base->call( 'stream.publish', @_ );
+    my $base = shift->base;
+    my %args = @_;
+
+    if (ref($args{'action_links'}) eq 'ARRAY') {
+        eval q{use JSON::Any};
+        croak "Unable to load JSON module to encode 'action_links':$@\n" if $@;
+        $args{'action_links'} = $base->_parser->encode( $args{'action_links'} );
+    }
+
+    return $base->call( 'stream.publish', %args );
 }
 
 sub remove {
@@ -174,7 +183,7 @@ Please report any bugs or feature requests to
 C<bug-www-facebook-api@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Herman Polloni C<< <hpolloni@gmail.com> >>
 

@@ -1,5 +1,15 @@
 Revision history for WWW-Facebook-API
 
+0.4.17  Thu Nov 26 09:48:03 PST 2009
+	- Updated Stream.publish to automatically call encode action_links
+	  to JSON. (Larry Mak)++
+	- Fixed upload method in Video along with docs (Anthony Bouvier)++
+	- Updated server call in API.pm to allow a filename to be passed in
+	  from the upload methods under Video and Photo. (Anthony Bouvier)++
+	- Didn't include Canvas testing b/c it looks like the code changes
+	  back in August broke the mocking. (It's on the TODO list)
+	- Added format testing for Video.upload
+
 0.4.16  Mon Aug 24 18:43:12 PDT 2009
 	Added Exception submodule for handling exceptions (Kevin Riggle)++
 
@@ -53,7 +63,7 @@ Revision history for WWW-Facebook-API
 	Updated docs and added FAQ with two questions
 	Added marketplace
 	Added users->has_app_permission, users->is_app_added, users->set_status
-	Added feed->publish_templatized_action (thanks King Mak)
+	Added feed->publish_templatized_action (thanks Larry Mak)
 	Changed autogen methods for subclasses in API.pm (thanks Shawn)
 	No longer send secret when authenticating (thanks Derek)
 
@@ -329,4 +339,3 @@ Branch Sat Jun  2 01:40:44 PDT 2007
 
 0.0.1  Mon Aug 21 13:09:11 2006
         Initial development.
-

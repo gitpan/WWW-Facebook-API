@@ -75,11 +75,11 @@ The photos.get method of the Facebook API:
 
     $response = $client->photos->get( subj_id => 3, aid => 2, pids => [4,7,8] );
 
-=item get_albums( uid => $uid, pids => [ @photo_ids ] )
+=item get_albums( uid => $uid, aids => [ @album_ids ] )
 
 The photos.getAlbums method of the Facebook API:
 
-    $response = $client->photos->get_albums( uid => 1, pids => [3,5] );
+    $response = $client->photos->get_albums( uid => 1, aids => [3,5] );
 
 =item get_tags( pids => [ @photo_ids ] )
 
@@ -95,6 +95,7 @@ The photos.upload method of the Facebook API:
         aid => 5,
         caption => 'beach',
         data => 'raw data',
+        filename => 'filename', # not in official API, but might be useful
     );
 
 =back
@@ -130,7 +131,7 @@ David Romano  C<< <unobe@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2007, David Romano C<< <unobe@cpan.org> >>. All rights reserved.
+Copyright (c) 2007-2009, David Romano C<< <unobe@cpan.org> >>. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
