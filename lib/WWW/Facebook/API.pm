@@ -7,7 +7,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.4.17');
+use version; our $VERSION = qv('0.4.18');
 
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -520,7 +520,7 @@ WWW::Facebook::API - Facebook API implementation
 =head1 VERSION
 
 This document and others distributed with this module describe
-WWW::Facebook::API version 0.4.17
+WWW::Facebook::API version 0.4.18
 
 =head1 SYNOPSIS
 
@@ -1064,7 +1064,7 @@ when an error is returned from the REST server.
 =item ua
 
 The L<LWP::UserAgent> agent used to communicate with the REST server.
-The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.17".
+The agent_alias is initially set to "Perl-WWW-Facebook-API/0.4.18".
 
 =back
 
@@ -1452,7 +1452,7 @@ Thomas Sibley C<< <tsibley@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2007-2009, David Romano C<< <unobe@cpan.org> >>. All rights reserved.
+Copyright (c) 2007-2010, David Romano C<< <unobe@cpan.org> >>. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
